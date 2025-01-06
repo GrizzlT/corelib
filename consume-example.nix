@@ -25,12 +25,12 @@ let
     consumed = foldlAttrs (meta: name: set: meta // (let
       depsResult = builtins.foldl' (meta2: dep: applyDep meta2 dep.name dep.dep) (meta // { depMappings = []; }) set.deps;
 
-      needsMapping = depsResult.pkgs ? ${name};
+      needsMapping = meta.pkgs ? ${name};
       counter = if needsMapping then depsResult.counter + 1 else depsResult.counter;
       pkgName = if needsMapping then name + "_pkg_${toString depsResult.counter}" else name;
     in {
       inherit counter;
-      pkgs = depsResult.pkgs // {
+      pkgs = meta.pkgs // {
         ${pkgName} = set.pkg.apply depsResult.pkgs depsResult.depMappings;
       };
     })) { counter = 0; pkgs = {}; } expanded;
