@@ -13,10 +13,16 @@ let
   # TODO: apply overrides
   mkPackageSet = { packages, dependencies ? {} }: let
     withFunctors = raw: let
-      createFunctors = override0: let
-        __original = _: raw // (createFunctors (_: {}));
+      createFunctors = pkgOverride: depOverrides: let
+        __original = _: raw // (createFunctors (_: {}) dependencies);
+
+        allDeps = foldlAttrs (acc: depName: dep: acc ++ dep.allDeps ++ [{ name = depName; inherit dep; }]) [] depOverrides;
+        withDepsOverride = override: raw //
+          (createFunctors pkgOverride (depOverrides // override));
+
         withOverride = override: raw //
-          (createFunctors (combineOverride override0 override));
+          (createFunctors (combineOverride pkgOverride override) depOverrides);
+
         apply = pkgs: depMappings: let
           toFix = self: let
             pkgsArg = this: let
@@ -25,15 +31,16 @@ let
             in pkgsInput;
 
             resolved = builtins.mapAttrs (_: pkg: pkg { pkgs = pkgsArg self; }) packages;
-          in resolved // override0 (pkgsArg resolved);
+          in resolved // pkgOverride (pkgsArg resolved);
         in fix toFix;
-      in { inherit withOverride apply __original; };
-    in raw // createFunctors (_: {});
-  in withFunctors {
-    inherit packages dependencies;
 
-    # TODO: apply overrides
-    allDeps = foldlAttrs (acc: depName: dep: acc ++ dep.allDeps ++ [{ name = depName; inherit dep; }]) [] dependencies;
+      in {
+        inherit withOverride apply __original withDepsOverride allDeps;
+        dependencies = depOverrides;
+      };
+    in raw // createFunctors (_: {}) dependencies;
+  in withFunctors {
+    inherit packages;
   };
 in
   mkPackageSet
