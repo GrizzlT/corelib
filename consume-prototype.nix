@@ -15,7 +15,7 @@ let
     recurseDep = result: name: dep: let
       depRes = recurseIntoDeps result dep.dependencies;
 
-      needsMapping = depRes.lib ? ${name} || pkgSet.dependencies ? ${name};
+      needsMapping = depRes.lib ? ${name};
       counter = if needsMapping then depRes.counter + 1 else depRes.counter;
       depName = if needsMapping then name + "_dep_${toString depRes.counter}" else name;
     in {

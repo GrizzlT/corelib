@@ -43,7 +43,7 @@ let
 
     - `customize`: Allows to set both dependencies and package extensions.
   */
-  mkPackageSet = { packages ? {}, lib ? {}, dependencies ? {} }: let
+  mkPackageSet = { packages ? {}, lib ? (_: {}), dependencies ? {} }: let
     withFunctors = raw: let
       __original = raw // (createFunctors packages lib dependencies []);
 
