@@ -1,4 +1,8 @@
-{ pkgs }:
+# Minimal set of utilities provided by `mkPackageSet`.
+core:
 {
-  value = 10;
+  # The package recipe function -> returns derivation
+  function = { ... }: {
+    value = 10;
+  };
 }
