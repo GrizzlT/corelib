@@ -2,7 +2,8 @@ let
   mkPackageSet = import ./mk-package-set.nix;
 
   set1 = mkPackageSet {
-    packages = {
+    # TODO: add self fixpoint for easy variants by overriding
+    packages = self: {
       one = import ./set1/one.nix;
       two = import ./set1/two.nix;
     };
@@ -18,8 +19,11 @@ let
     dependencies = {
       std = set2;
       std2 = set3;
+      std3 = set4;
     };
   };
+
+  set4 = mkPackageSet {};
 
   set2 = mkPackageSet {
     lib = (lib: {

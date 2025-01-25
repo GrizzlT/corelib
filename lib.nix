@@ -9,4 +9,6 @@
     names:
     f:
     builtins.listToAttrs (map (n: { name = n; value = f n; }) names);
+
+  fix = f: let x = f x; in x;
 }
