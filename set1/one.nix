@@ -19,4 +19,4 @@ core:
 
 # mkPackage
 # TODO: provide overrideLayer thing
-# encapsulation?? -> base layer is publicly exported as `internals`.
+# encapsulation?? -> base layer is publicly exported as `internals`?.

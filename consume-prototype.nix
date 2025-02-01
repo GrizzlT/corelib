@@ -1,6 +1,26 @@
 let
   inherit (import ./lib.nix) foldlAttrs genAttrs;
 
+  depMapping = pkgSets: let
+    recurseDep = meta: dep: foldlAttrs (acc: name: value: let
+        depName = name + "_${toString acc.counter}";
+        depValue = recurseDep { counter = acc.counter + 1; } value;
+      in acc // {
+        counter = depValue.counter;
+        mappings = acc.mappings or {} // { ${name} = depName; };
+        other = acc.other or {} // depValue.other or {} // { ${depName} = depValue.mappings or {}; };
+      }) { inherit (meta) counter; } dep.dependencies;
+
+    fakeRoot = { root = { dependencies = pkgSets; }; };
+
+    root = foldlAttrs (acc: name: value: let
+      resolved = recurseDep { inherit (acc) counter; } value;
+    in {
+      inherit (resolved) counter;
+      mappings = acc.mappings or {} // { ${name} = resolved.mappings or {}; } // resolved.other;
+    }) { counter = 1; } fakeRoot;
+  in root.mappings;
+
   # result -> recursively add to result with mappings for each dependency,
   # only returns the functions in the `lib` of `pkgSet`.
   resolveLib = pkgSet: let
@@ -72,5 +92,5 @@ let
 
   in consumed;
 in {
-  inherit consumePkgs resolveLib;
+  inherit consumePkgs resolveLib depMapping;
 }
