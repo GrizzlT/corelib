@@ -11,15 +11,10 @@ let
         other = acc.other or {} // depValue.other or {} // { ${depName} = depValue.mappings or {}; };
       }) { inherit (meta) counter; } dep.dependencies;
 
-    fakeRoot = { root = { dependencies = pkgSets; }; };
-
-    root = foldlAttrs (acc: name: value: let
-      resolved = recurseDep { inherit (acc) counter; } value;
-    in {
-      inherit (resolved) counter;
-      mappings = acc.mappings or {} // { ${name} = resolved.mappings or {}; } // resolved.other;
-    }) { counter = 1; } fakeRoot;
-  in root.mappings;
+    root = let
+      resolved = recurseDep { counter = 1; } { dependencies = pkgSets; };
+    in { root = resolved.mappings or {}; } // resolved.other;
+  in root;
 
   # result -> recursively add to result with mappings for each dependency,
   # only returns the functions in the `lib` of `pkgSet`.
