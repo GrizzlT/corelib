@@ -1,5 +1,5 @@
 let
-  inherit (import ./lib.nix) foldlAttrs genAttrs;
+  inherit (import ./lib.nix) foldlAttrs;
 
   depMapping = pkgSets: let
     recurseDep = meta: dep: foldlAttrs (acc: name: value: let
@@ -16,44 +16,26 @@ let
     in { root = resolved.mappings or {}; } // resolved.other;
   in root;
 
-  # result -> recursively add to result with mappings for each dependency,
-  # only returns the functions in the `lib` of `pkgSet`.
-  resolveLib = pkgSet: let
+  resolveLibs = depMappings: pkgSets: let
     resolveDep = result: mappings: dep: let
-      lib = foldlAttrs (acc: name: value: acc // { ${name} = result.${value}; }) {}
-            ((genAttrs (builtins.attrNames dep.dependencies) (n: n)) // mappings);
-
+      lib = foldlAttrs (acc: name: value: acc // { ${name} = result.${value}; }) {} mappings;
       resolved = dep.lib (lib // { self = resolved; });
     in resolved;
 
-    # result = attrset with lib, counter
     recurseDep = result: name: dep: let
-      depRes = recurseIntoDeps result dep.dependencies;
-
-      needsMapping = depRes.lib ? ${name};
-      counter = if needsMapping then depRes.counter + 1 else depRes.counter;
-      depName = if needsMapping then name + "_dep_${toString depRes.counter}" else name;
-    in {
-      return = {
-        inherit counter;
-        lib = depRes.lib // {
-          ${depName} = resolveDep depRes.lib depRes.mappings dep;
-        };
-      };
-      mapping = if needsMapping then {
-        ${name} = depName;
-      } else {};
+      depRes = recurseIntoDeps result name dep.dependencies;
+    in depRes // {
+      ${name} = resolveDep depRes depMappings.${name} dep;
     };
 
-    # returns lib, counter, mappings
-    recurseIntoDeps = result: deps: let
-      depRes = foldlAttrs (acc: name: value: let
-        resolved = recurseDep acc.inner name value;
-      in { inner = resolved.return; mappings = acc.mappings // resolved.mapping; }) { inner = result; mappings = {}; } deps;
-    in depRes.inner // { inherit (depRes) mappings; };
+    recurseIntoDeps = result: parent: deps:
+      foldlAttrs (acc: name: value: recurseDep acc depMappings.${parent}.${name} value) result deps;
 
-    mainComputed = recurseIntoDeps { counter = 0; lib = {}; } pkgSet.dependencies;
-  in resolveDep mainComputed.lib mainComputed.mappings pkgSet;
+  in foldlAttrs (acc: name: value: let
+      setName = depMappings.root.${name};
+      children = recurseIntoDeps acc setName value.dependencies;
+      resolved = resolveDep children depMappings.${setName} value;
+    in children // { ${depMappings.root.${name}} = resolved; }) {} pkgSets;
 
   consumePkgs = pkgSets: let
     expanded = builtins.mapAttrs (_: v: { pkg = v; deps = v.allDeps; }) pkgSets;
@@ -87,5 +69,5 @@ let
 
   in consumed;
 in {
-  inherit consumePkgs resolveLib depMapping;
+  inherit consumePkgs depMapping resolveLibs;
 }
