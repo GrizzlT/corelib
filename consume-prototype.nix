@@ -37,6 +37,14 @@ let
       resolved = resolveDep children depMappings.${setName} value;
     in children // { ${depMappings.root.${name}} = resolved; }) {} pkgSets;
 
+  # TODO: create function for easy cross-compile setup
+  #
+  /* e.g.
+    bootstrap (self: {
+      3native = { pkgsBuildBuild = self.3native; ... };
+      2nativeForeign = { pkgsBuildBuild = self.3native; ... };
+    })
+  */
   resolvePkgs = depMappings: lib: pkgSets:
     { pkgsBuildBuild, pkgsBuildHost, pkgsBuildTarget, pkgsHostHost, pkgsHostTarget, pkgsTargetTarget }@triples:
     { hostPlatform, buildPlatform, targetPlatform }@platform: # Add custom args here

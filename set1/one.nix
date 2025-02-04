@@ -2,16 +2,14 @@
 core:
 {
   # The package recipe function -> returns derivation
-  function = { two, three, args, ... }: {
+  function = { two, args, ... }: {
     value = two.onHost.value + 2;
-    child = three.onHost.value;
     inherit args;
   };
   # This package has a dependency, defaults have to be specified.
   dep-defaults = { pkgs, lib, ... }@args: {
     inherit (pkgs.self) two; # This dependency is from the same package set.
-    inherit (pkgs.std) three;
-    args = pkgs;
+    args = lib;
   };
 }
 

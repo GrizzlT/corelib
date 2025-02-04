@@ -32,7 +32,8 @@ let
 
     - `withDeps`: Allow overriding or adding dependencies to this package set.
 
-    - `withExtension`: Allow extending the resolve function of this package set.
+    # TODO: Apply extensions
+    - `withExtension`: Allow modifying the packages in this set.
 
     - `withPackages`: Extra packages to include in the set.
 

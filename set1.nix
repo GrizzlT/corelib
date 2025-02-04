@@ -26,10 +26,6 @@ let
   set4 = mkPackageSet {};
 
   set2 = mkPackageSet {
-    packages = self: {
-      three = import ./set2/three.nix;
-      four = import ./set2/four.nix;
-    };
     lib = (lib: {
       fn1 = _: "_Testing2_";
 
