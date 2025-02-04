@@ -1,7 +1,8 @@
 let
   # TODO: provide some minimal utilities for package definition
   # this mostly serves to provide override hooks
-  core = {};
+  # TODO: integrate with consume-prototype.nix
+  inherit (import ./lib.nix) core;
 
   # combineOverride = f: g: self: super: let
   #   fApplied = f self super;
@@ -71,6 +72,7 @@ let
         #   in resolved // pkgExt (pkgsArg resolved);
         # in fix toFix;
         #
+        # TODO: make packages overridable = overrideInput + addLayer
         packages = builtins.mapAttrs (_: value: value core) (pkgs packages);
       in {
         inherit withDeps withExtension withPackages withLib customize;

@@ -1,5 +1,5 @@
 let
-  inherit (import ./lib.nix) foldlAttrs;
+  inherit (import ./lib.nix) foldlAttrs isFunction core;
 
   depMapping = pkgSets: let
     recurseDep = meta: dep: foldlAttrs (acc: name: value: let
@@ -74,11 +74,13 @@ let
       lib' = (foldlAttrs (acc: name: value: acc // { ${name} = lib.${value}; }) {} mappings) // { self = lib.${depName}; };
       pkgs = foldlAttrs (acc: name: value: acc // { ${name} = spliceDep mappings.${name} (builtins.attrNames value.packages); }) {} dep.dependencies;
       pkgsSelf = pkgs // { self = spliceDep depName (builtins.attrNames dep.packages); };
-    in foldlAttrs (acc: name: pkg: let
-      deps = pkg.dep-defaults or (_: {}) ({ pkgs = pkgsSelf; lib = lib'; } // platform);
-    in acc // {
-      ${name} = pkg.function (deps // platform);
-    }) {} dep.packages;
+
+      # TODO: expand platforms with same stuff in nixpkgs
+      autoCall = pkg: overrides: let
+        pkg' = if isFunction pkg then pkg core else pkg;
+        deps = pkg'.dep-defaults or (_: {}) ({ pkgs = pkgsSelf; lib = lib'; inherit autoCall; } // overrides // platform);
+      in pkg'.function (deps // platform);
+    in foldlAttrs (acc: name: pkg: acc // { ${name} = autoCall pkg {}; }) {} dep.packages;
 
     recurseDep = result: name: dep: let
       depRes = recurseIntoDeps result name dep.dependencies;
