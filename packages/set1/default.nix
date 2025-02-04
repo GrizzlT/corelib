@@ -1,11 +1,11 @@
 let
-  mkPackageSet = import ./mk-package-set.nix;
+  mkPackageSet = import ../../mk-package-set.nix;
 
   set1 = mkPackageSet {
     # TODO: add self fixpoint for easy variants by overriding
     packages = self: {
-      one = import ./set1/one.nix;
-      two = import ./set1/two.nix;
+      one = import ./one.nix;
+      two = import ./two.nix;
     };
     lib = (lib: {
       fn1 = _: "_Testing1_";

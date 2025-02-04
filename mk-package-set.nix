@@ -1,6 +1,4 @@
 let
-  # util = import ./lib.nix;
-
   # TODO: provide some minimal utilities for package definition
   # this mostly serves to provide override hooks
   core = {};

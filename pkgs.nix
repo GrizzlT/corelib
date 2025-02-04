@@ -1,7 +1,7 @@
 let
   inherit (import ./consume-prototype.nix) depMapping resolveLibs resolvePkgs;
 
-  set1 = import ./set1.nix;
+  set1 = import ./packages/set1;
   sets = { inherit set1; };
   map = depMapping sets;
   lib = resolveLibs map sets;
