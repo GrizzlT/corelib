@@ -24,14 +24,13 @@ let
 
     withExtraAttrs = prevLayer: raw: let
       result = fix (extends prevLayer raw);
-    in result.public // { internals = result; } // {
+    in result.public // {
       addLayer = layer: withExtraAttrs (composeExtension prevLayer layer) raw;
     };
-  in withExtraAttrs (_: _: {}) build;
+  in withExtraAttrs (self: super: { public = super.public // { internals = self; }; }) build;
 
   mkDrv = drvInit: mkPackage (self: let
     args = if isFunction drvInit then drvInit self else drvInit;
-    # TODO: export outputs
     outputs = genAttrs (self.drvAttrs.outputs) (
       outputName: self.public // {
         outPath = self.drvOutAttrs.${outputName};
