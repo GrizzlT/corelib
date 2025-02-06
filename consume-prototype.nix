@@ -95,6 +95,17 @@ let
     children = recurseIntoDeps acc setName value.dependencies;
     resolved = resolveDep depMappings.${setName} setName value;
   in children // { ${depMappings.root.${name}} = resolved; }) {} pkgSets;
+
+  bootstrap = strategy: pkgSets: let
+    mapping = depMapping pkgSets;
+    lib = resolveLibs mapping pkgSets;
+    crossResolver = resolvePkgs mapping lib pkgSets;
+
+    stages = builtins.mapAttrs (name: value: crossResolver value.adjacent value.triple) (strategy stages);
+
+    outputLib = foldlAttrs (acc: name: value: acc // { ${name} = lib.${value}; }) {} mapping.root;
+    outputPkgs = foldlAttrs (acc: name: value: acc // { ${name} = stages.final.${value}; }) {} mapping.root;
+  in { lib = outputLib; pkgs = outputPkgs; };
 in {
-  inherit depMapping resolveLibs resolvePkgs;
+  inherit depMapping resolveLibs resolvePkgs bootstrap;
 }

@@ -23,7 +23,7 @@ let
     build = self: init self;
 
     withExtraAttrs = prevLayer: raw: let
-      finalOverride = composeExtension prevLayer (self: super: {
+      finalOverride = (self: super: {
         public = super.public // {
           addLayer = layer: withExtraAttrs (composeExtension prevLayer layer) raw;
         };

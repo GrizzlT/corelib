@@ -11,7 +11,7 @@ core:
       inherit bootstrapFiles;
       isFromBootstrapFiles = true;
     };
-  in mkStdenv.onBuild {
+  in mkStdenv.onHost {
     shell = "${bootstrapTools}/bin/bash";
     initialPath = [bootstrapTools];
     fetchurlBoot = import ../fetchurl-bootstrap.nix;
