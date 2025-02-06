@@ -1,8 +1,12 @@
 let
   # TODO: provide some minimal utilities for package definition
   # this mostly serves to provide override hooks
-  # TODO: integrate with consume-prototype.nix
-  inherit (import ./lib.nix) core;
+
+  /*
+    This could contain some minimal utilities to construct packages, can be used
+    for e.g. recipe overriding or default deps overriding.
+  */
+  inherit (import ./util.nix) core;
 
   # combineOverride = f: g: self: super: let
   #   fApplied = f self super;

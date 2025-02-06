@@ -4,6 +4,9 @@ core:
     # TODO: add other systems like in nixpkgs
     bootstrapFiles = import ./bootstrap-files/x86_64-unknown-linux-gnu.nix;
 
+    /*
+      Other derivations could be constructed internally
+    */
     bootstrapTools = import ./bootstrap-tools {
       # HACK: hard-coded values for prototype
       libc = "glibc";

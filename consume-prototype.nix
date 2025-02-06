@@ -1,5 +1,5 @@
 let
-  inherit (import ./lib.nix) foldlAttrs isFunction core;
+  inherit (import ./util.nix) foldlAttrs isFunction core;
 
   /*
     ## Creates a mapping dictionary for the given package sets.

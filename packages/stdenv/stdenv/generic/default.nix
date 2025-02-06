@@ -1,6 +1,9 @@
 core:
 {
   function = { mkDrv, mkDerivationFromStdenv, buildPlatform, hostPlatform, targetPlatform }:
+    /*
+      This package exports a function!
+    */
     {
       name ? "stdenv", shell,
       initialPath, preHook ? "",
