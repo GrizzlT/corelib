@@ -23,10 +23,13 @@ let
     build = self: init self;
 
     withExtraAttrs = prevLayer: raw: let
-      result = fix (extends prevLayer raw);
-    in result.public // {
-      addLayer = layer: withExtraAttrs (composeExtension prevLayer layer) raw;
-    };
+      finalOverride = composeExtension prevLayer (self: super: {
+        public = super.public // {
+          addLayer = layer: withExtraAttrs (composeExtension prevLayer layer) raw;
+        };
+      });
+      result = fix (extends (composeExtension prevLayer finalOverride) raw);
+    in result.public;
   in withExtraAttrs (self: super: { public = super.public // { internals = self; }; }) build;
 
   mkDrv = drvInit: mkPackage (self: let
@@ -39,19 +42,23 @@ let
       }
     );
   in {
-    drvAttrs = { outputs = [ "out" ]; } // (builtins.removeAttrs args [ "public" ]);
+    finalPackage = self.public;
+    drvAttrs = { outputs = [ "out" ]; } // (builtins.removeAttrs args [ "public" "extraAttrs" ]);
     drvOutAttrs = builtins.derivationStrict self.drvAttrs;
     public = rec {
       type = "derivation";
+      inherit (self.drvAttrs) name;
       outPath = self.drvOutAttrs.${outputName};
-      outputName = lib.head self.drvAttrs.outputs;
+      outputName = builtins.head self.drvAttrs.outputs;
       drvPath = self.drvOutAttrs.drvPath;
     } // outputs // args.public;
-  });
+  } // args.extraAttrs or {});
 in {
   customisation = { inherit composeExtension fix extends; };
 
   inherit isFunction;
 
   inherit mkDrv mkPackage;
+
+  inherit (import ./stdenv/generic/make-derivation.nix lib) mkDerivationFromStdenv;
 }

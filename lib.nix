@@ -18,5 +18,6 @@ in
 {
   inherit foldlAttrs genAttrs fix isFunction;
 
+  # TODO: add override semantics
   core = {};
 }

@@ -9,7 +9,7 @@ core:
   # This package has a dependency, defaults have to be specified.
   dep-defaults = { pkgs, lib, ... }@args: {
     inherit (pkgs.self) two; # This dependency is from the same package set.
-    args = lib;
+    args = pkgs;
   };
 }
 

@@ -6,6 +6,8 @@ let
       bash = import ./bash.nix;
       stdenv = import ./stdenv;
       mkStdenv = import ./stdenv/generic;
+
+      hello = import ./hello.nix;
     };
     lib = import ./lib.nix;
   };

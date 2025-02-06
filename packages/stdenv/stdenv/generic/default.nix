@@ -1,6 +1,6 @@
 core:
 {
-  function = { mkDrv, buildPlatform, hostPlatform, targetPlatform }:
+  function = { mkDrv, mkDerivationFromStdenv, buildPlatform, hostPlatform, targetPlatform }:
     {
       name ? "stdenv", shell,
       initialPath, preHook ? "",
@@ -27,6 +27,7 @@ core:
       public = {
         inherit buildPlatform hostPlatform targetPlatform;
         inherit fetchurlBoot cc;
+        inherit (self.drvAttrs) shell;
 
         # Convenience for doing some very basic shell syntax checking by parsing a script
         # without running any commands. Because this will also skip `shopt -s extglob`
@@ -34,10 +35,11 @@ core:
         shellDryRun = "${self.drvAttrs.shell} -n -O extglob";
 
         # TODO: add mkDerivation
+        mkDerivation = mkDerivationFromStdenv self.finalPackage;
       };
     });
 
   dep-defaults = { lib, ... }: {
-    inherit (lib.self) mkDrv;
+    inherit (lib.self) mkDrv mkDerivationFromStdenv;
   };
 }
