@@ -34,7 +34,6 @@ core:
         # commands and extglob affects the Bash parser, we enable extglob always.
         shellDryRun = "${self.drvAttrs.shell} -n -O extglob";
 
-        # TODO: add mkDerivation
         mkDerivation = mkDerivationFromStdenv self.finalPackage;
       };
     });

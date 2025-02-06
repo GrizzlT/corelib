@@ -61,17 +61,6 @@ let
         customize = { packages ? (_: {}), extensions ? [], dependencies ? {}, lib ? {} }: raw //
           (createFunctors (combinePkgs pkgs packages) (exts ++ extensions) (deps // dependencies) (libs // lib));
 
-        # apply = pkgs: depMappings: let
-        #   toFix = self: let
-        #     pkgsArg = this: let
-        #       pkgsSelf = pkgs // { self = this; };
-        #       pkgsInput = builtins.foldl' (acc: mapping: acc // { ${mapping.name} = acc.${mapping.depName}; }) pkgsSelf depMappings;
-        #     in pkgsInput;
-        #
-        #     resolved = builtins.mapAttrs (_: pkg: pkg { pkgs = pkgsArg self; }) packages;
-        #   in resolved // pkgExt (pkgsArg resolved);
-        # in fix toFix;
-        #
         # TODO: make packages overridable = overrideInput + addLayer
         packages = builtins.mapAttrs (_: value: value core) (pkgs packages);
       in {

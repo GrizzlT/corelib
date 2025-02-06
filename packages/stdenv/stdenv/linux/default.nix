@@ -5,7 +5,7 @@ core:
     bootstrapFiles = import ./bootstrap-files/x86_64-unknown-linux-gnu.nix;
 
     bootstrapTools = import ./bootstrap-tools {
-      # TODO: hard-coded values for prototype
+      # HACK: hard-coded values for prototype
       libc = "glibc";
       system = "x86_64-linux";
       inherit bootstrapFiles;

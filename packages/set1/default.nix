@@ -2,7 +2,6 @@ let
   mkPackageSet = import ../../mk-package-set.nix;
 
   set1 = mkPackageSet {
-    # TODO: add self fixpoint for easy variants by overriding
     packages = self: {
       one = import ./one.nix;
       two = import ./two.nix;
