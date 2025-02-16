@@ -75,66 +75,7 @@ let
       drvPath = self.drvOutAttrs.drvPath;
     } // outputs;
   });
-
-  /*
-    ## Construct a derivation fixpoint.
-
-    The resulting attribute set computes a derivation. The input arguments are
-    passed directly to `derivationStrict` and the resulting outputs are exported
-    directly to `public`.
-
-    Attributes in `extraAttrs` are added to the fixpoint directly (i.e. are
-    internal) and attributes in `public` are added to `public`.
-  */
-  # mkDrv = drvInit: mkPackage (self: let
-  #   args = if isFunction drvInit then drvInit self else drvInit;
-  #   outputs = genAttrs (self.drvAttrs.outputs) (
-  #     outputName: self.public // {
-  #       outPath = self.drvOutAttrs.${outputName};
-  #       inherit outputName;
-  #       outputSpecified = true;
-  #     }
-  #   );
-  # in {
-  #   finalPackage = self.public;
-  #   drvAttrs = { outputs = [ "out" ]; } // (builtins.removeAttrs args [ "public" "extraAttrs" ]);
-  #   drvOutAttrs = builtins.derivationStrict self.drvAttrs;
-  #   public = rec {
-  #     type = "derivation";
-  #     inherit (self.drvAttrs) name;
-  #     outPath = self.drvOutAttrs.${outputName};
-  #     outputName = builtins.head self.drvAttrs.outputs;
-  #     drvPath = self.drvOutAttrs.drvPath;
-  #   } // outputs // args.public;
-  # } // args.extraAttrs or {});
-
-  /*
-    ## WIP, shows how a bootstrap process could look like.
-  */
-  mkDerivationFromStdenv =
-    stdenv:
-
-    let
-      mkDerivation = fnOrAttrs:
-        lib.self.mkDrv (self: let
-          setup = if lib.self.isFunction fnOrAttrs then fnOrAttrs self else fnOrAttrs;
-        in setup
-          // (if (setup ? name  || (setup ? pname && setup ? version)) then {
-            name = if setup ? setup.name then setup.name else "${setup.pname}-${setup.version}";
-          } else {})
-          // {
-            builder = setup.realBuilder or stdenv.shell;
-            args = setup.args or ["-e" (setup.builder or ./default-builder.sh)];
-            inherit stdenv;
-
-            # inherit (stdenv.buildPlatform) system;
-            system = stdenv.buildPlatform;
-
-            public = { inherit (stdenv) buildPlatform hostPlatform targetPlatform; };
-            extraAttrs.setup = setup;
-          });
-    in mkDerivation;
 in
 {
-  inherit mkPackage mkDrv mkDerivationFromStdenv;
+  inherit mkPackage mkDrv;
 }

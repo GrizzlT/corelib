@@ -1,14 +1,16 @@
 lib:
 
 {
-  trivial = { inherit (import ./trivial.nix lib) isFunction; };
+  trivial = import ./trivial.nix lib;
   inherit (lib.self.trivial) isFunction;
 
-  fixedPoints = { inherit (import ./fixed-points.nix lib) fix extends composeExtensions; };
+  fixedPoints = import ./fixed-points.nix lib;
   inherit (lib.self.fixedPoints) fix extends composeExtensions;
 
-  attrsets = { inherit (import ./attrsets.nix lib) genAttrs; };
+  attrsets = import ./attrsets.nix lib;
   inherit (lib.self.attrsets) genAttrs;
 
-  inherit (import ../stdenv/generic/make-derivation.nix lib) mkDrv mkPackage mkDerivationFromStdenv;
+  strings = import ./strings.nix lib;
+
+  inherit (import ./derivation.nix lib) mkDrv mkPackage;
 }
