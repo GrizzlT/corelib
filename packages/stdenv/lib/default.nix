@@ -8,9 +8,12 @@ lib:
   inherit (lib.self.fixedPoints) fix extends composeExtensions;
 
   attrsets = import ./attrsets.nix lib;
-  inherit (lib.self.attrsets) genAttrs;
+  inherit (lib.self.attrsets) genAttrs optionalAttrs;
 
   strings = import ./strings.nix lib;
 
+  derivation = import ./derivation.nix lib;
   inherit (import ./derivation.nix lib) mkDrv mkPackage;
+
+  builder = import ./builder.nix lib;
 }

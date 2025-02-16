@@ -10,6 +10,8 @@ let
       stdenv = import ./stdenv;
       mkStdenv = import ./stdenv/generic;
 
+      mkAutoTools = import ./autotools.nix;
+
       hello = import ./hello.nix;
     };
     lib = import ./lib;

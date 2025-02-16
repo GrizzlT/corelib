@@ -1,7 +1,7 @@
 core:
 {
-  function = { mkDerivation, fetchurl, ... }: mkDerivation (self: {
-    pname = "hello";
+  function = { mkAutoTools, fetchurl, ... }: mkAutoTools (self: {
+    name = "hello";
     version = "2.12.1";
 
     src = fetchurl {
@@ -10,7 +10,7 @@ core:
     };
   });
   dep-defaults = { pkgs, ... }: {
-    inherit (pkgs.self.stdenv.onHostForTarget) mkDerivation;
+    mkAutoTools = pkgs.self.mkAutoTools.onHost;
     fetchurl = import ./stdenv/fetchurl-bootstrap.nix;
   };
 }

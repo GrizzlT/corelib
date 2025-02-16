@@ -53,7 +53,8 @@ let
     are passed directly to `derivationStrict` and the resulting outputs are exported
     directly to `public`.
 
-    Any other input attributes are included in the package fixpoint for later use.
+    Any other input attributes are included in the package fixpoint for later use
+    in line with [`mkPackage`].
   */
   mkDrv = drvInit: mkPackage (self: let
     init = if isFunction drvInit then drvInit self else drvInit;
@@ -64,18 +65,54 @@ let
         outputSpecified = true;
       }
     );
-  in (builtins.removeAttrs [ "drvAttrs" ] init) // {
-    drvAttrs = { outputs = [ "out" ]; } // init.drvAttrs;
+  in (builtins.removeAttrs init [ "drvAttrs" ]) // {
+    drvAttrs = { outputs = [ "out" ]; }
+    // init.drvAttrs
+    // (lib.self.optionalAttrs (self ? name && self ? version) {
+      # TODO: sanitizeDerivationName required??
+      name = init.drvAttrs.name or "${self.name}-${self.version}";
+    });
     drvOutAttrs = builtins.derivationStrict self.drvAttrs;
-    public = init.public // {
+    public = init.public or {} // {
       type = "derivation";
-      inherit (self.drvAttrs) name;
       outPath = self.drvOutAttrs.${self.public.outputName};
       outputName = builtins.head self.drvAttrs.outputs;
       drvPath = self.drvOutAttrs.drvPath;
+      inherit (self) name version;
     } // outputs;
+  });
+
+  constructBuildScript = phases: order: let
+    phaseScripts = builtins.map (name:
+      (/* bash */ ''
+        showPhaseHeader "${name}"
+        local startTime
+        startTime=$(date +"%s")${"\n"}
+      '')
+      + phases.${name}
+      + (/* bash */ ''
+        ${"\n\n"}local endTime
+        endTime=$(date +"%s")
+        showPhaseFooter "${name}" "$startTime" "$endTime"
+      '')) order;
+  in builtins.toFile "buildPhases" (builtins.concatStringsSep "\n\n" phaseScripts);
+
+  /*
+    ## Constructs a build with phases with [`mkDrv`]
+
+    The resulting derivation fits in the general builder with bash utilities.
+    It runs the stages in `setup.stages` in the order specified in `setup.buildOrder`;
+  */
+  mkPhasedBuild = drvInit: mkDrv (self: let
+    init = if isFunction drvInit then drvInit self else drvInit;
+  in init // {
+    drvAttrs = init.drvAttrs or {} // {
+      actualBuild = constructBuildScript self.setup.phases self.setup.buildOrder;
+      buildUtils = ../stdenv/generic/utils.sh;
+      args = ["-e" ../stdenv/generic/generic-builder.sh ];
+    };
   });
 in
 {
-  inherit mkPackage mkDrv;
+  inherit mkPackage mkDrv mkPhasedBuild;
 }
