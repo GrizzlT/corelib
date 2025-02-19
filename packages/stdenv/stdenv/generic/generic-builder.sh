@@ -2,6 +2,7 @@
 # Shell options.
 
 export SHELL="$shell"
+export CONFIG_SHELL="$SHELL" # For autotools
 
 # shellcheck shell=bash
 __nixpkgs_setup_set_original=$-
@@ -46,7 +47,10 @@ for i in $initialPath; do
 done
 unset i
 
+
+# Define exit behavior, should come from $buildUtils
 trap "exitHandler" EXIT
+
 
 # Set a fallback default value for SOURCE_DATE_EPOCH, used by some build tools
 # to provide a deterministic substitute for the "current" time. Note that
@@ -61,16 +65,17 @@ export SOURCE_DATE_EPOCH
 # be set--see zic manual page 2004').
 export TZ=UTC
 
+
 # Normalize the NIX_BUILD_CORES variable. The value might be 0, which
 # means that we're supposed to try and auto-detect the number of
 # available CPU cores at run-time.
-
 NIX_BUILD_CORES="${NIX_BUILD_CORES:-1}"
 if ((NIX_BUILD_CORES <= 0)); then
   guess=$(nproc 2>/dev/null || true)
   ((NIX_BUILD_CORES = guess <= 0 ? 1 : guess))
 fi
 export NIX_BUILD_CORES
+
 
 # Prevent SSL libraries from using certificates in /etc/ssl, unless set explicitly.
 # Leave it in impure shells for convenience.
@@ -82,6 +87,9 @@ if [[ -z "${SSL_CERT_FILE:-}" && "${IN_NIX_SHELL:-}" != "impure" ]]; then
   export SSL_CERT_FILE=/no-cert-file.crt
 fi
 
+
+
+
 ######################################################################
 # What follows is the generic builder.
 
@@ -90,6 +98,8 @@ function runBuild() {
 }
 
 runBuild
+
+
 
 
 ######################################################################
