@@ -7,6 +7,7 @@ core:
       system = "x86_64-linux";
       inherit bootstrapFiles;
     };
+    fetchurlBootstrap = import ../fetchurl-bootstrap.nix;
 
     initBootstrap = init: let
       start = let x = init x; in x;
@@ -17,8 +18,8 @@ core:
       in raw // { inherit addLayer; };
     in withExtraAttrs start;
 
-    stage1 = initBootstrap (_:
-      import ./stage1.nix { inherit bootstrapTools; fetchurl = import ../fetchurl-bootstrap.nix; }
+    stage1 = initBootstrap (self:
+      import ./stage1.nix { inherit bootstrapTools; fetchurl = fetchurlBootstrap; stage1 = self; }
     );
 
   in stage1;
