@@ -8,6 +8,7 @@ let
 
       # often used, or depending on very little
       trivial = callLibs ./trivial.nix;
+      fixed-points = callLibs ./fixed-points.nix;
 
       # datatypes
       attrsets = callLibs ./attrsets.nix;
@@ -15,6 +16,7 @@ let
       strings = callLibs ./strings.nix;
 
       # packaging
+      derivations = callLibs ./derivations.nix;
       versions = callLibs ./versions.nix;
       # TODO: add derivation fixpoint
       # TODO: add meta checks

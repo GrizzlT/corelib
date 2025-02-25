@@ -1,3 +1,5 @@
+# selected from https://github.com/NixOS/nixpkgs
+
 # Version string functions.
 lib:
 let

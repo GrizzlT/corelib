@@ -1,3 +1,5 @@
+# selected from https://github.com/NixOS/nixpkgs
+
 lib:
 let
 
