@@ -1,10 +1,22 @@
 lib:
 let
 
+  inherit (lib.self.trivial)
+    isFunction
+    ;
+
   inherit (lib.self.fixed-points)
     composeExtensions
     extends
     fix
+    ;
+
+  inherit (lib.self.lists)
+    foldl'
+    ;
+
+  inherit (lib.self.derivations)
+    mkEncapsulate
     ;
 
 in {
@@ -49,7 +61,7 @@ in {
 
   */
   mkEncapsulate = init: let
-    build = self: init self;
+    build = self: if isFunction init then init self else init;
 
     withExtraAttrs = prevLayer: raw: let
       result = fix (extends prevLayer raw);
@@ -59,5 +71,13 @@ in {
   in withExtraAttrs (self: super: {
     public = super.public or {} // { internals = self; };
   }) build;
+
+  /**
+    ## Construct a layered encapsulated fixpoint
+
+    Adds `layers` successively to an empty [`mkEncapsulate`] through `addLayer`.
+  */
+  encapsulateLayers = layers:
+    foldl' (acc: layer: acc.addLayer layer) (mkEncapsulate {}) layers;
 
 }
