@@ -22,17 +22,19 @@ let
 
   makeOverridable = f: origArgs: let
     origRes = f origArgs;
-  in origRes // { overrideInputs = newArgs: makeOverridable f (origArgs // newArgs); };
+  in if origRes == null then null else (origRes // { overrideInputs = newArgs: makeOverridable f (origArgs // newArgs); });
 
   mkPackage = pkgDef: let
     withFunctors = prevLayer: deps: let
       resolvedFn = args: let
         pkgRes = pkgDef.function args;
-      in if pkgRes ? addLayer then
-        pkgRes.addLayer prevLayer
-      else let
-        final = prevLayer pkgRes final;
-      in final;
+      in if pkgRes != null then (
+        if pkgRes ? addLayer then
+          pkgRes.addLayer prevLayer
+        else let
+          final = prevLayer pkgRes final;
+        in final)
+      else null;
     in {
       function = args: makeOverridable resolvedFn args;
       dep-defaults = args: (pkgDef.dep-defaults args) // (deps args);
