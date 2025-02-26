@@ -4,6 +4,9 @@ let
   inherit (lib.self.trivial)
     isFunction
     ;
+  inherit (lib.self.strings)
+    sanitizeDerivationName
+    ;
 
   inherit (lib.self.fixed-points)
     composeExtensions
@@ -13,6 +16,12 @@ let
 
   inherit (lib.self.lists)
     foldl'
+    head
+    ;
+
+  inherit (lib.self.attrsets)
+    genAttrs
+    optionalAttrs
     ;
 
   inherit (lib.self.derivations)
@@ -80,4 +89,35 @@ in {
   encapsulateLayers = layers:
     foldl' (acc: layer: acc.addLayer layer) (mkEncapsulate {}) layers;
 
+  layers = {
+    package = { name, version, ... }@attrs: (self: super: {
+      package = attrs;
+      public = super.public or {} // {
+        inherit name version;
+      };
+    });
+
+    derivation = { system, builder, ... }@attrs: (self: super: let
+      outputs = genAttrs (self.drvAttrs.outputs) (
+        outputName: self.public // {
+          inherit outputName;
+          outPath = self.drvOutAttrs.${outputName};
+        }
+      );
+    in {
+      drvAttrs = { outputs = [ "out" ]; }
+        // attrs
+        // (optionalAttrs (attrs ? name || self ? package) {
+          name = sanitizeDerivationName attrs.name or "${self.package.name}-${self.package.version}";
+      });
+      drvOutAttrs = builtins.derivationStrict self.drvAttrs;
+      # make derivation more lazy
+      public = super.public or {} // {
+        type = "derivation";
+        outPath = self.drvOutAttrs.${self.public.outputName};
+        outputName = head self.drvAttrs.outputs;
+        drvPath = self.drvOutAttrs.drvPath;
+      } // outputs;
+    });
+  };
 }
