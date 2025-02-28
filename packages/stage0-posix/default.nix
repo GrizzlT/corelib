@@ -11,7 +11,7 @@ let
       hex0 = import ./hex0.nix;
       mescc-tools-boot = import ./mescc-tools-boot.nix;
       mescc-tools = import ./mescc-tools;
-      # mescc-tools-extra = import ./mescc-tools-extra;
+      mescc-tools-extra = import ./mescc-tools-extra;
 
       ## GCC bootstrap
     };

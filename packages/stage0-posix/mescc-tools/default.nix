@@ -127,6 +127,7 @@ core.mkPackage {
         endianFlag
         ;
     };
+    public.targetPlatform = hostPlatform;
   }
   else null;
 
