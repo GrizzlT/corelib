@@ -32,7 +32,8 @@ let
         if pkgRes ? addLayer then
           pkgRes.addLayer prevLayer
         else let
-          final = prevLayer pkgRes final;
+          prev' = prevLayer pkgRes final;
+          final = pkgRes // prev';
         in final)
       else null;
     in {
