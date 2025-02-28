@@ -12,7 +12,7 @@ in {
     (layers.package { inherit (attrs) name version; })
     (layers.derivation ({ system = buildPlatform; } // attrs.drv))
     (self: super: {
-      public = super.public // (if isFunction (attrs.public or {}) then attrs.public super.public else attrs.public);
+      public = super.public // (if isFunction (attrs.public or {}) then (attrs.public or {}) super.public else (attrs.public or {}));
     })
   ]
   else null;

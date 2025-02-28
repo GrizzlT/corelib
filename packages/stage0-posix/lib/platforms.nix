@@ -1,5 +1,7 @@
 { self, std, ... }:
 let
+  self' = self.platforms;
+
   inherit (std.strings)
     toLower
     ;
@@ -23,11 +25,11 @@ in {
   }.${system} or (throw "Unsupported system: ${system}");
 
     # lower-case form is widely used by m2libc
-  m2libcArch = system: toLower (self.stage0Arch system);
+  m2libcArch = system: toLower (self'.stage0Arch system);
 
   # Passed to M2-Mesoplanet as --operating-system
   m2libcOS = system:
-    if elem system self.platforms then "linux" else throw "Unsupported system: ${system}";
+    if elem system self'.platforms then "linux" else throw "Unsupported system: ${system}";
 
   baseAddress = system:
     {

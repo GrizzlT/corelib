@@ -31,6 +31,7 @@ core.mkPackage {
     };
     public = {
       inherit hex0-seed;
+      targetPlatform = hostPlatform;
     };
   };
 
