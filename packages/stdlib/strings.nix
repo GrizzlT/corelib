@@ -4,6 +4,7 @@ lib:
 let
 
   inherit (lib.self.trivial) warnIf;
+  inherit (lib.self.attrsets) getOutput;
 
   inherit (builtins)
     elem
@@ -588,7 +589,7 @@ in {
   makeSearchPathOutput =
     output:
     subDir:
-    pkgs: makeSearchPath subDir (map (lib.getOutput output) pkgs);
+    pkgs: makeSearchPath subDir (map (getOutput output) pkgs);
 
   /**
     Construct a library search path (such as RPATH) containing the

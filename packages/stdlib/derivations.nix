@@ -102,6 +102,7 @@ in {
         outputName: self.public // {
           inherit outputName;
           outPath = self.drvOutAttrs.${outputName};
+          outputSpecified = true;
         }
       );
     in {
