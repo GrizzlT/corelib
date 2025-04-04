@@ -34,6 +34,7 @@ core.mkPackage {
         ./build.kaem
       ];
       mescc-tools = mescc-tools.onBuildForHost;
+      mkdir = mescc-tools.onBuildForHost.mkdir;
       inherit
         src
         m2libcArch

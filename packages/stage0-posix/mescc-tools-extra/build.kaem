@@ -24,7 +24,7 @@ cd ${src}/mescc-tools-extra
 
 # Create output folder
 CC mkdir.c -o ${TMP}/mkdir
-${TMP}/mkdir -p ${out}/bin
+${mkdir} -p ${out}/bin
 
 CC sha256sum.c -o ${out}/bin/sha256sum
 CC match.c -o ${out}/bin/match
