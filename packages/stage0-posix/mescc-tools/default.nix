@@ -5,6 +5,8 @@ core.mkPackage {
   function = {
     platforms,
     mescc-tools-boot,
+    mescc-tools-boot2,
+    mescc-tools,
     m2libc,
     src,
     mkMinimalPackage,
@@ -14,11 +16,14 @@ core.mkPackage {
     ...
   }: let
 
-    inherit (mescc-tools-boot.onHostForTarget)
-      kaem-unwrapped
-      M1
+    inherit (mescc-tools-boot.onBuild)
       M2
       blood-elf-0
+      ;
+
+    inherit (mescc-tools-boot2.onBuildForHost)
+      kaem-unwrapped
+      M1
       hex2
       ;
 
@@ -40,7 +45,7 @@ core.mkPackage {
     # We need a few tools from mescc-tools-extra to assemble the output folder
     buildMesccToolsExtraUtil =
       name:
-      mkMinimalPackage {
+      mkMinimalPackage.onHost {
         name = "mescc-tools-extra-${name}";
         version = "1.6.0";
         drv = {
@@ -99,7 +104,7 @@ core.mkPackage {
     chmod = buildMesccToolsExtraUtil "chmod";
     replace = buildMesccToolsExtraUtil "replace";
 
-  in mkMinimalPackage {
+  in mkMinimalPackage.onHost {
     name = "mescc-tools";
     version = "1.6.0";
     drv = {
@@ -110,29 +115,36 @@ core.mkPackage {
         "--file"
         ./build.kaem
       ];
+      M1_host = mescc-tools-boot2.onHostForTarget.M1;
+      hex2_host = mescc-tools-boot2.onHostForTarget.hex2;
       inherit
-        M1
         M2
+        M1
         blood-elf-0
         hex2
-        mkdir
-        cp
-        chmod
-        replace
+
         m2libc
         src
+
         m2libcArch
         baseAddress
         bloodFlag
         endianFlag
         ;
+    } // (if buildPlatform == hostPlatform then {
+      inherit mkdir cp chmod replace;
+    } else {
+      inherit (mescc-tools.onBuildForHost) mkdir cp chmod replace;
+    });
+    public = {
+      targetPlatform = hostPlatform;
+      inherit mkdir cp chmod replace;
     };
-    public.targetPlatform = hostPlatform;
   };
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;
-    inherit (pkgs.self) mkMinimalPackage mescc-tools-boot;
+    inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools-boot2 mescc-tools;
     src = pkgs.self.minimal-bootstrap-sources.onHost;
     m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
   };

@@ -22,11 +22,9 @@
 # along with Mes.  If not, see <http://www.gnu.org/licenses/>.
 
 ${mkdir} -p ${out}/bin
-${cp} ${M2} ${out}/bin/M2
-${chmod} 0555 ${out}/bin/M2
-${cp} ${M1} ${out}/bin/M1
+${cp} ${M1_host} ${out}/bin/M1
 ${chmod} 0555 ${out}/bin/M1
-${cp} ${hex2} ${out}/bin/hex2
+${cp} ${hex2_host} ${out}/bin/hex2
 ${chmod} 0555 ${out}/bin/hex2
 
 # M2-Mesoplanet searches for runtime dependencies in environment variables

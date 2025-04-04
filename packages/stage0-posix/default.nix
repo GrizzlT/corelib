@@ -10,12 +10,14 @@ let
 
       hex0 = import ./hex0.nix;
       mescc-tools-boot = import ./mescc-tools-boot.nix;
+      mescc-tools-boot2 = import ./mescc-tools-boot2.nix;
       mescc-tools = import ./mescc-tools;
-      mescc-tools-extra = import ./mescc-tools-extra;
-
-      writeText = import ./write-text.nix;
-      writeTextFile = import ./write-text-file.nix;
-      kaem = import ./kaem;
+      # mescc-tools-extra = import ./mescc-tools-extra;
+      #
+      # writeText = import ./write-text.nix;
+      # writeTextFile = import ./write-text-file.nix;
+      # kaem = import ./kaem;
+      # runCommand = import ./run-command.nix;
 
       ## GCC bootstrap
     };
