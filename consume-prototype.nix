@@ -179,27 +179,29 @@ let
     buildFromTriple = depName: pkgName: host: target: let
       triple = triples.${"pkgs" + host + target};
     in if triple.${depName} ? ${pkgName} then let pkg = triple.${depName}.${pkgName}; in
-      if pkg.targetPlatform or null == null then { ${"on" + host} = pkg; }
-      else { ${"on" + host + "For" + target} = pkg; }
+      if pkg.targetPlatform or null == null then { ${"on" + host} = pkg; noSplice = pkg.noSplice or false; }
+      else { ${"on" + host + "For" + target} = pkg; noSplice = pkg.noSplice or false; }
     else {};
 
     /*
       Returns the explicitly spliced version of a package.
       See https://github.com/NixOS/nixpkgs/issues/227327 for the maximum amount
       of attributes possible.
+
+      Special packages that declare the `noSplice` attribute are not spliced.
     */
     spliceDep = depName: pkgNames: let
       spliced = builtins.foldl' (acc: pkg: let
         splicer = buildFromTriple depName pkg;
       in acc // { ${pkg} =
         (splicer "Build" "Build") //
-        (splicer "Build" "Host") //
         (splicer "Build" "Target") //
+        (splicer "Build" "Host") //
+        (splicer "Target" "Target") //
         (splicer "Host" "Host") //
-        (splicer "Host" "Target") //
-        (splicer "Target" "Target");
+        (splicer "Host" "Target");
       }) {} pkgNames;
-    in spliced;
+    in if spliced.noSplice or false then spliced.onBuildForHost or spliced.onBuild else spliced;
 
     /*
       Resolves one package set in the context of `mapping` which is

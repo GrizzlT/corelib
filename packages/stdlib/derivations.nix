@@ -97,7 +97,9 @@ in {
       };
     });
 
-    derivation = { system, builder, ... }@attrs: (self: super: let
+    derivation = attrInit: (self: super: let
+      attrs = if isFunction attrInit then attrInit self else attrInit;
+
       outputs = genAttrs (self.drvAttrs.outputs) (
         outputName: self.public // {
           inherit outputName;

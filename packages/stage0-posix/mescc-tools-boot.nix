@@ -93,7 +93,7 @@ core.mkPackage {
       "x86_64-linux" = ["--64"];
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
-    run = name: builder: args: mkMinimalPackage.onHost {
+    run = name: builder: args: mkMinimalPackage {
       inherit name;
       version = "1.6.0";
       drv = {
@@ -655,9 +655,8 @@ core.mkPackage {
   } else null;
 
   dep-defaults = { pkgs, lib, ... }: {
-    mkMinimalPackage = pkgs.self.mkMinimalPackage;
     inherit (lib.self) platforms;
-    inherit (pkgs.self) hex0 mescc-tools-boot;
+    inherit (pkgs.self) mkMinimalPackage hex0 mescc-tools-boot;
     src = pkgs.self.minimal-bootstrap-sources.onHost;
     m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
   };

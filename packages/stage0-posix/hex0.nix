@@ -32,6 +32,12 @@ core.mkPackage {
     public = {
       inherit hex0-seed;
       targetPlatform = hostPlatform;
+
+      mes-src = fetchurl {
+        url = "https://ftpmirror.gnu.org/mes/mes-0.25.tar.gz";
+        hash = "sha256-MlJQs1Z+2SA7pwFhyDWvAQeec+vtl7S1u3fKUAuCiUA=";
+      };
+
     };
   };
 

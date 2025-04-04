@@ -13,8 +13,8 @@ let
       mescc-tools = import ./mescc-tools;
       mescc-tools-extra = import ./mescc-tools-extra;
 
-      # writeText = import ./write-text.nix;
-      # writeTextFile = import ./write-text-file.nix;
+      writeText = import ./write-text.nix;
+      writeTextFile = import ./write-text-file.nix;
       kaem = import ./kaem;
 
       ## GCC bootstrap

@@ -40,7 +40,7 @@ core.mkPackage {
     # We need a few tools from mescc-tools-extra to assemble the output folder
     buildMesccToolsExtraUtil =
       name:
-      mkMinimalPackage.onHost {
+      mkMinimalPackage {
         name = "mescc-tools-extra-${name}";
         version = "1.6.0";
         drv = {
@@ -99,7 +99,7 @@ core.mkPackage {
     chmod = buildMesccToolsExtraUtil "chmod";
     replace = buildMesccToolsExtraUtil "replace";
 
-  in if buildPlatform == hostPlatform && hostPlatform == targetPlatform then mkMinimalPackage.onHost {
+  in mkMinimalPackage {
     name = "mescc-tools";
     version = "1.6.0";
     drv = {
@@ -128,8 +128,7 @@ core.mkPackage {
         ;
     };
     public.targetPlatform = hostPlatform;
-  }
-  else null;
+  };
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;

@@ -22,7 +22,7 @@ core.mkPackage {
     m2libcArch = platforms.m2libcArch hostPlatform;
     m2libcOS = "linux"; # NOTE: hardcoded to linux!
 
-  in if buildPlatform == hostPlatform && hostPlatform == targetPlatform then mkMinimalPackage.onHost {
+  in mkMinimalPackage {
     name = "mescc-tools-extra";
     version = "1.6.0";
     drv = {
@@ -40,8 +40,7 @@ core.mkPackage {
         m2libcOS
         ;
     };
-  }
-  else null;
+  };
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;

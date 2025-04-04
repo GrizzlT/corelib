@@ -18,10 +18,9 @@ core.mkPackage {
   }: let
 
     inherit (std.strings) makeBinPath;
-    inherit (std.attrsets) removeAttrs;
     inherit (mescc-tools-boot.onHostForTarget) kaem-unwrapped;
 
-  in if buildPlatform == hostPlatform && hostPlatform == targetPlatform then mkMinimalPackage.onHost {
+  in mkMinimalPackage {
     name = "kaem";
     version = kaem-unwrapped.version;
     drv = {
@@ -65,8 +64,7 @@ core.mkPackage {
     #       );
     #     } // (removeAttrs env [ "tools" ]);
     #   };
-  }
-  else null;
+  };
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib) std;
