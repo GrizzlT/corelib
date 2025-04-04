@@ -7,7 +7,7 @@ core.mkPackage {
   function = {
     platforms,
     mescc-tools,
-    mescc-tools-boot,
+    mescc-tools-boot2,
     m2libc,
     src,
     mkMinimalPackage,
@@ -17,12 +17,12 @@ core.mkPackage {
     ...
   }: let
 
-    inherit (mescc-tools-boot.onHostForTarget) kaem-unwrapped;
+    inherit (mescc-tools-boot2.onBuildForHost) kaem-unwrapped;
 
     m2libcArch = platforms.m2libcArch hostPlatform;
     m2libcOS = "linux"; # NOTE: hardcoded to linux!
 
-  in mkMinimalPackage {
+  in mkMinimalPackage.onHost {
     name = "mescc-tools-extra";
     version = "1.6.0";
     drv = {
@@ -33,7 +33,7 @@ core.mkPackage {
         "--file"
         ./build.kaem
       ];
-      mescc-tools = mescc-tools.onHostForTarget;
+      mescc-tools = mescc-tools.onBuildForHost;
       inherit
         src
         m2libcArch
@@ -44,7 +44,7 @@ core.mkPackage {
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;
-    inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools;
+    inherit (pkgs.self) mkMinimalPackage mescc-tools-boot2 mescc-tools;
     src = pkgs.self.minimal-bootstrap-sources.onHost;
     m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
   };
