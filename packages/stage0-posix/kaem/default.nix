@@ -4,27 +4,20 @@ core:
 core.mkPackage {
   function = {
     std,
-    platforms,
-    mescc-tools,
     mescc-tools-extra,
-    mescc-tools-boot,
-    kaem,
-    writeText,
+    mescc-tools-boot2,
     mkMinimalPackage,
-    buildPlatform,
-    hostPlatform,
-    targetPlatform,
     ...
   }: let
 
     inherit (std.strings) makeBinPath;
-    inherit (mescc-tools-boot.onHostForTarget) kaem-unwrapped;
+    inherit (mescc-tools-boot2.onHostForTarget) kaem-unwrapped;
 
-  in mkMinimalPackage {
+  in mkMinimalPackage.onHost {
     name = "kaem";
     version = kaem-unwrapped.version;
     drv = {
-      builder = kaem-unwrapped;
+      builder = mescc-tools-boot2.onBuildForHost.kaem-unwrapped;
       args = [
         "--verbose"
         "--strict"
@@ -44,14 +37,10 @@ core.mkPackage {
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib) std;
-    inherit (lib.self) platforms;
     inherit (pkgs.self)
-      kaem
-      mescc-tools
-      mescc-tools-boot
+      mescc-tools-boot2
       mescc-tools-extra
       mkMinimalPackage
-      writeText
       ;
   };
 }
