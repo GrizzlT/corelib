@@ -142,7 +142,7 @@ ${M2} --architecture ${m2libcArch} \
 	--debug \
 	-o get_machine.M1
 
-${out}/bin/blood-elf ${endianFlag} ${bloodFlag} -f ./get_machine.M1 -o ./get_machine-footer.M1
+${blood-elf} ${endianFlag} ${bloodFlag} -f ./get_machine.M1 -o ./get_machine-footer.M1
 
 ${M1} --architecture ${m2libcArch} \
 	${endianFlag} \
@@ -184,7 +184,7 @@ ${M2} --architecture ${m2libcArch} \
 	--debug \
 	-o ./M2-1.M1
 
-${out}/bin/blood-elf ${endianFlag} ${bloodFlag} -f ./M2-1.M1 -o ./M2-1-footer.M1
+${blood-elf} ${endianFlag} ${bloodFlag} -f ./M2-1.M1 -o ./M2-1-footer.M1
 
 ${M1} --architecture ${m2libcArch} \
 	${endianFlag} \

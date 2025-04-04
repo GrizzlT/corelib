@@ -133,8 +133,10 @@ core.mkPackage {
         ;
     } // (if buildPlatform == hostPlatform then {
       inherit mkdir cp chmod replace;
+      blood-elf = "${placeholder "out"}/bin/blood-elf";
     } else {
       inherit (mescc-tools.onBuildForHost) mkdir cp chmod replace;
+      blood-elf = "${mescc-tools.onBuildForHost}/bin/blood-elf";
     });
     public = {
       targetPlatform = hostPlatform;

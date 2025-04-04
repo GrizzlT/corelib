@@ -47,15 +47,17 @@ core.mkPackage {
       blood-elf-0
       M1-0
       ;
+    inherit (mescc-tools-boot2.onBuildForHost)
+      M1
+      hex2
+      ;
     inherit (mescc-tools-boot2.onHostForTarget)
       M1-macro-1_M1
       M1-macro-1-footer_M1
       M1-macro-1_hex2
-      M1
       hex2_linker-2_M1
       hex2_linker-2-footer_M1
       hex2_linker-2_hex2
-      hex2
       kaem_M1
       kaem-footer_M1
       kaem_hex2
