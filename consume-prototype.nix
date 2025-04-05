@@ -193,15 +193,16 @@ let
     spliceDep = depName: pkgNames: let
       spliced = builtins.foldl' (acc: pkg: let
         splicer = buildFromTriple depName pkg;
-      in acc // { ${pkg} =
-        (splicer "Build" "Build") //
-        (splicer "Build" "Target") //
-        (splicer "Build" "Host") //
-        (splicer "Target" "Target") //
-        (splicer "Host" "Host") //
-        (splicer "Host" "Target");
+
+        splicedPkg = (splicer "Build" "Build") //
+          (splicer "Build" "Target") //
+          (splicer "Build" "Host") //
+          (splicer "Target" "Target") //
+          (splicer "Host" "Host") //
+          (splicer "Host" "Target");
+      in acc // { ${pkg} = if splicedPkg.noSplice or false then splicedPkg.onBuildForHost or splicedPkg.onBuild else splicedPkg;
       }) {} pkgNames;
-    in if spliced.noSplice or false then spliced.onBuildForHost or spliced.onBuild else spliced;
+    in spliced;
 
     /*
       Resolves one package set in the context of `mapping` which is

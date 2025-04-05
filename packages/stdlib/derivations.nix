@@ -111,7 +111,7 @@ in {
       drvAttrs = { outputs = [ "out" ]; }
         // attrs
         // (optionalAttrs (attrs ? name || self ? package) {
-          name = sanitizeDerivationName attrs.name or "${self.package.name}-${self.package.version}";
+          name = sanitizeDerivationName attrs.name or "${self.package.name}${if self.package.version != "" then "-${self.package.version}" else ""}";
       });
       drvOutAttrs = builtins.derivationStrict self.drvAttrs;
       # make derivation more lazy

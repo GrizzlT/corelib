@@ -13,9 +13,9 @@ let
       mescc-tools-boot2 = import ./mescc-tools-boot2.nix;
       mescc-tools = import ./mescc-tools;
       mescc-tools-extra = import ./mescc-tools-extra;
-      #
-      # writeText = import ./write-text.nix;
-      # writeTextFile = import ./write-text-file.nix;
+
+      writeText = import ./write-text.nix;
+      writeTextFile = import ./write-text-file.nix;
       kaem = import ./kaem;
       # runCommand = import ./run-command.nix;
 
