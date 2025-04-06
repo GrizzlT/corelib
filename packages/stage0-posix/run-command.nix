@@ -10,7 +10,7 @@ core.mkPackage {
     targetPlatform,
     ...
   }: let
-    inherit (std.attrsets) removeAttrs;
+    inherit (std.attrsets) removeAttrs optionalAttrs;
     inherit (std.strings) makeBinPath;
   in {
     __functor = _: name: env: buildCommand: mkMinimalPackage.onHost {
@@ -32,7 +32,8 @@ core.mkPackage {
             mescc-tools-extra.onBuild
           ]
         );
-      } // (removeAttrs env [ "tools" ]));
+      } // (removeAttrs env [ "tools" "public" ]));
+      public = env.public or {};
     };
     inherit targetPlatform;
   };
