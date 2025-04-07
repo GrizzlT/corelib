@@ -72,6 +72,8 @@ core.mkPackage {
       #define MES_VERSION "${version}"
     '';
     sources = (import ./new-sources.nix).${mes_cpu}.linux.mescc;
+    # add symlink() to libc+tcc so we can use it in ln-boot
+    libc_tcc_SOURCES = sources.libc_tcc_SOURCES ++ [ "lib/linux/symlink.c" ];
 
     srcPost = runCommand.onHost "${name}-src-${version}" ({
       inherit cc_cpu mes_cpu stage0_cpu;
@@ -196,7 +198,7 @@ core.mkPackage {
     libc-mini = mkLib "libc-mini" sources.libc_mini_SOURCES;
     libmescc = mkLib "libmescc" sources.libmescc_SOURCES;
     libc = mkLib "libc" sources.libc_SOURCES;
-    libc_tcc = mkLib "libc+tcc" sources.libc_tcc_SOURCES;
+    libc_tcc = mkLib "libc+tcc" libc_tcc_SOURCES;
 
     # Recompile Mes and Mes C library using mes-m2 bootstrapped Mes
     libs = runCommand.onHost "${name}-m2-libs-${version}" {}
@@ -228,7 +230,12 @@ core.mkPackage {
       '';
 
     # Build mes itself
-    compiler = runCommand.onHost "${name}-${version}" {}
+    compiler = runCommand.onHost "${name}-${version}"
+      {
+        public = {
+          inherit src srcPost libs;
+        };
+      }
       ''
         mkdir -p ''${out}/bin
 
@@ -244,16 +251,9 @@ core.mkPackage {
       '';
 
   in
-    {
-      inherit
-        src
-        srcPost
-        ;
-      libs = if buildPlatform == hostPlatform then libs else null;
-      compiler = if buildPlatform == hostPlatform then compiler else null;
-
-      inherit buildPlatform hostPlatform;
-    };
+    if buildPlatform == hostPlatform
+    then compiler
+    else null;
 
   dep-defaults = { pkgs, lib, autoCall, ... }: {
     inherit autoCall;

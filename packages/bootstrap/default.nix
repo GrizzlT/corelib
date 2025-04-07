@@ -4,6 +4,7 @@ let
   bootstrap = mkPackageSet {
     packages = self: {
       mes = import ./mes;
+      ln-boot = import ./ln-boot;
     };
     dependencies = {
       stage0 = import ../stage0-posix;
