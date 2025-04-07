@@ -1,12 +1,23 @@
 core:
 core.mkPackage {
-  function = { platforms, hostPlatform, mkMinimalPackage, src, fetchurl, ... }: let
+  function = {
+    platforms,
+    hex0,
+    mkMinimalPackage,
+    src,
+    fetchurl,
+    buildPlatform,
+    hostPlatform,
+    ...
+  }: let
 
     stage0Arch = platforms.stage0Arch hostPlatform;
     hash = {
       "AArch64" = "sha256-XTPsoKeI6wTZAF0UwEJPzuHelWOJe//wXg4HYO0dEJo=";
       "AMD64" = "sha256-RCgK9oZRDQUiWLVkcIBSR2HeoB+Bh0czthrpjFEkCaY=";
       "x86" = "sha256-QU3RPGy51W7M2xnfFY1IqruKzusrSLU+L190ztN6JW8=";
+      "riscv64" = "sha256-BMgaiXD8bnxOTHal4RlmYKItuWUcDIwSrRuPVAnm/BE=";
+      "riscv32" = "sha256-QU3RPGy51W7M2xnfFY1IqruKzusrSLU+L190ztN6JW7=";
     }.${stage0Arch} or (throw "Unsupported system: ${hostPlatform}");
 
     hex0-seed = fetchurl {
@@ -20,7 +31,9 @@ core.mkPackage {
     name = "hex0";
     version = "1.6.0";
     drv = {
-      builder = hex0-seed;
+      builder = if (buildPlatform == hostPlatform)
+        then hex0-seed
+        else hex0.onBuild;
       args = [
         "${src}/${stage0Arch}/hex0_${stage0Arch}.hex0"
         (placeholder "out")
@@ -29,21 +42,11 @@ core.mkPackage {
       outputHashAlgo = "sha256";
       outputHash = hash;
     };
-    public = {
-      inherit hex0-seed;
-      targetPlatform = hostPlatform;
-
-      mes-src = fetchurl {
-        url = "https://ftpmirror.gnu.org/mes/mes-0.25.tar.gz";
-        hash = "sha256-MlJQs1Z+2SA7pwFhyDWvAQeec+vtl7S1u3fKUAuCiUA=";
-      };
-
-    };
   };
 
   dep-defaults = { pkgs, lib, ... }: {
     src = pkgs.self.minimal-bootstrap-sources.onHost;
-    inherit (pkgs.self) mkMinimalPackage;
+    inherit (pkgs.self) mkMinimalPackage hex0;
     inherit (lib.self) platforms;
     fetchurl = import ./bootstrap-fetchurl.nix;
   };

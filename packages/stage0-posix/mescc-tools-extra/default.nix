@@ -17,7 +17,7 @@ core.mkPackage {
     ...
   }: let
 
-    inherit (mescc-tools-boot2.onBuildForHost) kaem-unwrapped;
+    inherit (mescc-tools-boot2.onBuild) kaem-unwrapped;
 
     m2libcArch = platforms.m2libcArch hostPlatform;
     m2libcOS = "linux"; # NOTE: hardcoded to linux!
@@ -33,8 +33,8 @@ core.mkPackage {
         "--file"
         ./build.kaem
       ];
-      mescc-tools = mescc-tools.onBuildForHost;
-      mkdir = mescc-tools.onBuildForHost.mkdir;
+      mescc-tools = mescc-tools.onBuild;
+      mkdir = mescc-tools.onBuild.mkdir;
       inherit
         src
         m2libcArch

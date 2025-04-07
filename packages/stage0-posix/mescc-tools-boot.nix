@@ -66,7 +66,6 @@ core.mkPackage {
 
     out = placeholder "out";
     stage0Arch = platforms.stage0Arch hostPlatform;
-    baseAddress = platforms.baseAddress hostPlatform;
     m2libcArch = platforms.m2libcArch hostPlatform;
 
     endianFlag = {
@@ -102,7 +101,7 @@ core.mkPackage {
     # Phase-1 Build hex1 from hex0 #
     ################################
 
-    hex1 = run "hex1" hex0.onHostForTarget [
+    hex1 = run "hex1" hex0.onBuild [
       "${src}/${stage0Arch}/hex1_${stage0Arch}.hex0"
       out
     ];

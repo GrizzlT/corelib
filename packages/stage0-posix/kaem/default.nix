@@ -11,13 +11,13 @@ core.mkPackage {
   }: let
 
     inherit (std.strings) makeBinPath;
-    inherit (mescc-tools-boot2.onHostForTarget) kaem-unwrapped;
+    inherit (mescc-tools-boot2.onHost) kaem-unwrapped;
 
   in mkMinimalPackage.onHost {
     name = "kaem";
     version = kaem-unwrapped.version;
     drv = {
-      builder = mescc-tools-boot2.onBuildForHost.kaem-unwrapped;
+      builder = mescc-tools-boot2.onBuild.kaem-unwrapped;
       args = [
         "--verbose"
         "--strict"

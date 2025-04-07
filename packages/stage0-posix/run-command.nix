@@ -28,7 +28,7 @@ core.mkPackage {
           (env.tools or [])
           ++ [
             kaem.onBuild
-            mescc-tools.onBuildForHost
+            mescc-tools.onBuild
             mescc-tools-extra.onBuild
           ]
         );

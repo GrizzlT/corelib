@@ -33,7 +33,6 @@ core:
 core.mkPackage {
   function = {
     platforms,
-    hex0,
     mescc-tools-boot,
     mescc-tools-boot2,
     m2libc,
@@ -47,11 +46,11 @@ core.mkPackage {
       blood-elf-0
       M1-0
       ;
-    inherit (mescc-tools-boot2.onBuildForHost)
+    inherit (mescc-tools-boot2.onBuild)
       M1
       hex2
       ;
-    inherit (mescc-tools-boot2.onHostForTarget)
+    inherit (mescc-tools-boot2.onHost)
       M1-macro-1_M1
       M1-macro-1-footer_M1
       M1-macro-1_hex2
@@ -64,7 +63,7 @@ core.mkPackage {
       ;
 
     out = placeholder "out";
-    stage0Arch = platforms.stage0Arch hostPlatform;
+
     baseAddress = platforms.baseAddress hostPlatform;
     m2libcArch = platforms.m2libcArch hostPlatform;
 
@@ -72,12 +71,16 @@ core.mkPackage {
       "aarch64-linux" = "--little-endian";
       "i686-linux" = "--little-endian";
       "x86_64-linux" = "--little-endian";
+      "riscv64-linux" = "--little-endian";
+      "riscv32-linux" = "--little-endian";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     bloodFlags = {
       "aarch64-linux" = ["--64"];
       "i686-linux" = [];
       "x86_64-linux" = ["--64"];
+      "riscv64-linux" = ["--64"];
+      "riscv32-linux" = [];
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     run = name: builder: args: mkMinimalPackage.onHost {
@@ -94,7 +97,7 @@ core.mkPackage {
     # TODO: compile for different architecture based on platform triple
   in {
 
-    inherit buildPlatform hostPlatform targetPlatform;
+    inherit buildPlatform hostPlatform;
 
     ## Stages copied from nixpkgs
 
@@ -345,7 +348,7 @@ core.mkPackage {
     ];
 
   } else let
-    hex2_build = mescc-tools-boot2.onBuildForHost.hex2;
+    hex2_build = mescc-tools-boot2.onBuild.hex2;
   in {
 
     M1 = run "M1" hex2_build [
@@ -380,7 +383,7 @@ core.mkPackage {
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;
-    inherit (pkgs.self) mkMinimalPackage hex0 mescc-tools-boot mescc-tools-boot2;
+    inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools-boot2;
     src = pkgs.self.minimal-bootstrap-sources.onHost;
     m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
   };

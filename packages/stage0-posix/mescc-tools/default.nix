@@ -21,7 +21,7 @@ core.mkPackage {
       blood-elf-0
       ;
 
-    inherit (mescc-tools-boot2.onBuildForHost)
+    inherit (mescc-tools-boot2.onBuild)
       kaem-unwrapped
       M1
       hex2
@@ -34,12 +34,16 @@ core.mkPackage {
       "aarch64-linux" = "--little-endian";
       "i686-linux" = "--little-endian";
       "x86_64-linux" = "--little-endian";
+      "riscv64-linux" = "--little-endian";
+      "riscv32-linux" = "--little-endian";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     bloodFlag = {
       "aarch64-linux" = "--64";
       "i686-linux" = " ";
       "x86_64-linux" = "--64";
+      "riscv64-linux" = "--64";
+      "riscv32-linux" = " ";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     # We need a few tools from mescc-tools-extra to assemble the output folder
@@ -115,8 +119,8 @@ core.mkPackage {
         "--file"
         ./build.kaem
       ];
-      M1_host = mescc-tools-boot2.onHostForTarget.M1;
-      hex2_host = mescc-tools-boot2.onHostForTarget.hex2;
+      M1_host = mescc-tools-boot2.onHost.M1;
+      hex2_host = mescc-tools-boot2.onHost.hex2;
       inherit
         M2
         M1
@@ -135,11 +139,10 @@ core.mkPackage {
       inherit mkdir cp chmod replace;
       blood-elf = "${placeholder "out"}/bin/blood-elf";
     } else {
-      inherit (mescc-tools.onBuildForHost) mkdir cp chmod replace;
-      blood-elf = "${mescc-tools.onBuildForHost}/bin/blood-elf";
+      inherit (mescc-tools.onBuild) mkdir cp chmod replace;
+      blood-elf = "${mescc-tools.onBuild}/bin/blood-elf";
     });
     public = {
-      targetPlatform = hostPlatform;
       inherit mkdir cp chmod replace;
     };
   };
