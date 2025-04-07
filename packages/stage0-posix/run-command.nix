@@ -7,10 +7,8 @@ core.mkPackage {
     mescc-tools-extra,
     writeText,
     mkMinimalPackage,
-    targetPlatform,
     ...
   }: let
-    inherit (std.attrsets) removeAttrs optionalAttrs;
     inherit (std.strings) makeBinPath;
   in {
     __functor = _: name: env: buildCommand: mkMinimalPackage.onHost {
@@ -35,7 +33,6 @@ core.mkPackage {
       } // (removeAttrs env [ "tools" "public" ]));
       public = env.public or {};
     };
-    inherit targetPlatform;
   };
 
   dep-defaults = { pkgs, lib, ... }: {

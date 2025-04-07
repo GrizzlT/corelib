@@ -17,7 +17,7 @@ core.mkPackage {
       sha256 = "065ksalfllbdrzl12dz9d9dcxrv97wqxblslngsc6kajvnvlyvpk";
     };
 
-    nyacc = runCommand.onHostForTarget "${name}-${version}"
+    nyacc = runCommand.onHost "${name}-${version}"
       {
         public.guilePath = "${nyacc}/share/${name}-${version}/module";
       }
