@@ -8,6 +8,7 @@ let
       ln-boot = import ./ln-boot;
 
       tinycc-bootstrappable = import ./tinycc/bootstrappable.nix;
+      tinycc-mes = import ./tinycc/mes.nix;
     };
     lib = import ./lib;
     dependencies = {
