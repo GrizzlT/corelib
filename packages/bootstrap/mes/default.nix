@@ -2,6 +2,7 @@ core:
 core.mkPackage {
   function = {
     std,
+    platforms,
     fetchurl,
     kaem,
     runCommand,
@@ -26,44 +27,42 @@ core.mkPackage {
 
     cc_cpu = {
       "i686-linux" = "i386";
-      # "x86_64-linux" = "x86_64";
-      "x86_64-linux" = "i386";
+      "x86_64-linux" = "x86_64";
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     stage0_cpu = {
       "i686-linux" = "x86";
-      "x86_64-linux" = "x86";
-      # "x86_64-linux" = "amd64";
+      "x86_64-linux" = "amd64";
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     mes_cpu = {
       "i686-linux" = "x86";
-      "x86_64-linux" = "x86";
-      # "x86_64-linux" = "x86_64";
+      "x86_64-linux" = "x86_64";
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     blood_elf_flag = {
       "i686-linux" = "";
-      "x86_64-linux" = "";
-      # "x86_64-linux" = "--64";
+      "x86_64-linux" = "--64";
       "riscv64-linux" = "--64";
       "riscv32-linux" = "";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+
+    baseAddress = platforms.baseAddress hostPlatform;
 
     ###################
     #### Define sources
 
     name = "mes";
-    version = "0.25";
+    version = "0.27";
     src = fetchurl {
       url = "https://ftpmirror.gnu.org/mes//mes-${version}.tar.gz";
-      hash = "sha256-MlJQs1Z+2SA7pwFhyDWvAQeec+vtl7S1u3fKUAuCiUA=";
+      hash = "sha256-Az7mVtmM/ASoJuqyfu1uaidtFbu5gKfNcdAPMCJ6qqg=";
     };
 
     nyacc = autoCall (import ./nyacc.nix) {};
@@ -71,12 +70,10 @@ core.mkPackage {
       #undef SYSTEM_LIBC
       #define MES_VERSION "${version}"
     '';
-    sources = (import ./new-sources.nix).${mes_cpu}.linux.mescc;
-    # add symlink() to libc+tcc so we can use it in ln-boot
-    libc_tcc_SOURCES = sources.libc_tcc_SOURCES ++ [ "lib/linux/symlink.c" ];
+    sources = (import ./sources.nix).${mes_cpu}.linux.mescc;
 
     srcPost = runCommand.onHost "${name}-src-${version}" ({
-      inherit cc_cpu mes_cpu stage0_cpu;
+      inherit cc_cpu mes_cpu stage0_cpu baseAddress;
       outputs = [
         "out"
         "bin"
@@ -96,6 +93,7 @@ core.mkPackage {
       cp ${config_h version} include/mes/config.h
       mkdir -p include/arch
       cp include/linux/${mes_cpu}/kernel-stat.h include/arch
+      cp include/linux/${mes_cpu}/signal.h include/arch
       cp include/linux/${mes_cpu}/syscall.h include/arch
 
       # Remove pregenerated files
@@ -107,15 +105,17 @@ core.mkPackage {
 
       # Remove environment impurities
       __GUILE_LOAD_PATH="\"''${MES_PREFIX}/mes/module:''${MES_PREFIX}/module:${nyacc.guilePath}\""
-      boot0_scm=mes/module/mes/boot-0.scm
       guile_mes=mes/module/mes/guile.mes
-      replace --file ''${boot0_scm} --output ''${boot0_scm} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
+      guile_module=mes/module/mes/guile-module.mes
+      main_scm=mes/module/mes/main.scm
+      replace --file ''${main_scm} --output ''${main_scm} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
+      replace --file ''${guile_module} --output ''${guile_module} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
       replace --file ''${guile_mes} --output ''${guile_mes} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
 
       module_mescc_scm=module/mescc/mescc.scm
-      replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"M1\")" --replace-with "\"${mescc-tools.onHost}/bin/M1\""
-      replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"HEX2\")" --replace-with "\"${mescc-tools.onHost}/bin/hex2\""
-      replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"BLOOD_ELF\")" --replace-with "\"${mescc-tools.onHost}/bin/blood-elf\""
+      # replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"M1\")" --replace-with "\"${mescc-tools.onHost}/bin/M1\""
+      # replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"HEX2\")" --replace-with "\"${mescc-tools.onHost}/bin/hex2\""
+      # replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"BLOOD_ELF\")" --replace-with "\"${mescc-tools.onHost}/bin/blood-elf\""
       replace --file ''${module_mescc_scm} --output ''${module_mescc_scm} --match-on "(getenv \"srcdest\")" --replace-with "\"''${MES_PREFIX}\""
 
       mes_c=src/mes.c
@@ -124,8 +124,8 @@ core.mkPackage {
 
       # Increase runtime resource limits
       gc_c=src/gc.c
-      replace --file ''${gc_c} --output ''${gc_c} --match-on "getenv (\"MES_ARENA\")" --replace-with "\"100000000\""
-      replace --file ''${gc_c} --output ''${gc_c} --match-on "getenv (\"MES_MAX_ARENA\")" --replace-with "\"100000000\""
+      replace --file ''${gc_c} --output ''${gc_c} --match-on "getenv (\"MES_ARENA\")" --replace-with "\"20000000\""
+      replace --file ''${gc_c} --output ''${gc_c} --match-on "getenv (\"MES_MAX_ARENA\")" --replace-with "\"20000000\""
       replace --file ''${gc_c} --output ''${gc_c} --match-on "getenv (\"MES_STACK\")" --replace-with "\"6000000\""
 
       # Create mescc.scm
@@ -149,12 +149,12 @@ core.mkPackage {
     ##################
     #### Build GNU Mes
 
-    srcPrefix = "${mes.onBuild.srcPost.out}/mes-${version}";
-    cc = "${mes.onBuild.srcPost.bin}/bin/mes-m2";
+    srcPrefix = "${mes.onHost.srcPost.out}/mes-${version}";
+    cc = "${mes.onHost.srcPost.bin}/bin/mes-m2";
     ccArgs = [
       "-e"
       "main"
-      "${mes.onBuild.srcPost.bin}/bin/mescc.scm"
+      "${mes.onHost.srcPost.bin}/bin/mescc.scm"
       "--"
       "-D"
       "HAVE_CONFIG_H=1"
@@ -162,7 +162,8 @@ core.mkPackage {
       "${srcPrefix}/include"
       "-I"
       "${srcPrefix}/include/linux/${mes_cpu}"
-      # "--arch=${mes_cpu}"
+      "--arch=${mes_cpu}"
+      "--base-address=${baseAddress}"
       # "--kernel=linux"
     ];# ++ (optionals (blood_elf_flag != "") ["-m" "64"]);
 
@@ -198,7 +199,7 @@ core.mkPackage {
     libc-mini = mkLib "libc-mini" sources.libc_mini_SOURCES;
     libmescc = mkLib "libmescc" sources.libmescc_SOURCES;
     libc = mkLib "libc" sources.libc_SOURCES;
-    libc_tcc = mkLib "libc+tcc" libc_tcc_SOURCES;
+    libc_tcc = mkLib "libc+tcc" sources.libc_tcc_SOURCES;
 
     # Recompile Mes and Mes C library using mes-m2 bootstrapped Mes
     libs = runCommand.onHost "${name}-m2-libs-${version}" {}
@@ -233,14 +234,16 @@ core.mkPackage {
     compiler = runCommand.onHost "${name}-${version}"
       {
         public = {
-          inherit src srcPost libs;
+          inherit src srcPost srcPrefix libs;
         };
       }
       ''
         mkdir -p ''${out}/bin
 
         ${mes.onBuild.srcPost.bin}/bin/mes-m2 -e main ${mes.onBuild.srcPost.bin}/bin/mescc.scm -- \
-          -L ''${srcPrefix}/lib \
+          --arch=${mes_cpu} \
+          --base-address=${baseAddress} \
+          -L ${srcPrefix}/lib \
           -L ${libs}/lib \
           -lc \
           -lmescc \
@@ -258,6 +261,7 @@ core.mkPackage {
   dep-defaults = { pkgs, lib, autoCall, ... }: {
     inherit autoCall;
     inherit (lib) std;
+    inherit (lib.stage0) platforms;
     inherit (pkgs.self) mes;
     inherit (pkgs.stage0)
       kaem

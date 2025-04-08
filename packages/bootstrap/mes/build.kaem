@@ -1,7 +1,4 @@
 #! /bin/sh
-# Modified by GrizzlT (2025) - avoid running mes-m2
-# Copied from version Mes 0.25
-#
 # Copyright © 2019,2020,2022 Jan (janneke) Nieuwenhuizen <janneke@gnu.org>
 # Copyright © 2023 Andrius Štikonas <andrius@stikonas.eu>
 #
@@ -19,6 +16,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with GNU Mes.  If not, see <http://www.gnu.org/licenses/>.
+#
+# GrizzlT (2025): remove mes-m2 test running for cross-compilation.
 
 # Usage:
 # kaem --verbose --strict
@@ -30,138 +29,143 @@ blood_elf_flag=${blood_elf_flag:---little-endian}
 
 mkdir -p m2
 
-M2-Planet                                       \
-    --debug                                     \
-    --architecture ${stage0_cpu}                \
-    -D __${cc_cpu}__=1                          \
-    -D __linux__=1                              \
-    -f include/mes/config.h                     \
-    -f include/mes/lib-mini.h                   \
-    -f include/mes/lib.h                        \
-    -f lib/linux/${mes_cpu}-mes-m2/crt1.c       \
-    -f lib/mes/__init_io.c                      \
-    -f lib/linux/${mes_cpu}-mes-m2/_exit.c      \
-    -f lib/linux/${mes_cpu}-mes-m2/_write.c     \
-    -f lib/mes/globals.c                        \
-    -f lib/m2/cast.c                            \
-    -f lib/stdlib/exit.c                        \
-    -f lib/mes/write.c                          \
-    -f include/linux/${mes_cpu}/syscall.h       \
-    -f lib/linux/${mes_cpu}-mes-m2/syscall.c    \
-    -f lib/stub/__raise.c                       \
-    -f lib/linux/brk.c                          \
-    -f lib/linux/malloc.c                       \
-    -f lib/string/memset.c                      \
-    -f lib/linux/read.c                         \
-    -f lib/mes/fdgetc.c                         \
-    -f lib/stdio/getchar.c                      \
-    -f lib/stdio/putchar.c                      \
-    -f lib/stub/__buffered_read.c               \
-    -f include/fcntl.h                          \
-    -f lib/linux/_open3.c                       \
-    -f lib/linux/open.c                         \
-    -f lib/mes/mes_open.c                       \
-    -f lib/string/strlen.c                      \
-    -f lib/mes/eputs.c                          \
-    -f lib/mes/fdputc.c                         \
-    -f lib/mes/eputc.c                          \
-                                                \
-    -f include/time.h                           \
-    -f include/sys/time.h                       \
-    -f include/m2/types.h                       \
-    -f include/sys/types.h                      \
-    -f include/mes/mes.h                        \
-    -f include/mes/builtins.h                   \
-    -f include/mes/constants.h                  \
-    -f include/mes/symbols.h                    \
-                                                \
-    -f lib/mes/__assert_fail.c                  \
-    -f lib/mes/assert_msg.c                     \
-                                                \
-    -f lib/mes/fdputc.c                         \
-    -f lib/string/strncmp.c                     \
-    -f lib/posix/getenv.c                       \
-    -f lib/mes/fdputs.c                         \
-    -f lib/mes/ntoab.c                          \
-    -f lib/ctype/isdigit.c                      \
-    -f lib/ctype/isxdigit.c                     \
-    -f lib/ctype/isspace.c                      \
-    -f lib/ctype/isnumber.c                     \
-    -f lib/mes/abtol.c                          \
-    -f lib/stdlib/atoi.c                        \
-    -f lib/string/memcpy.c                      \
-    -f lib/stdlib/free.c                        \
-    -f lib/stdlib/realloc.c                     \
-    -f lib/string/strcpy.c                      \
-    -f lib/mes/itoa.c                           \
-    -f lib/mes/ltoa.c                           \
-    -f lib/mes/fdungetc.c                       \
-    -f lib/posix/setenv.c                       \
-    -f lib/linux/access.c                       \
-    -f include/linux/m2/kernel-stat.h           \
-    -f include/sys/stat.h                       \
-    -f lib/linux/chmod.c                        \
-    -f lib/linux/ioctl3.c                       \
-    -f include/sys/ioctl.h                      \
-    -f lib/m2/isatty.c                          \
-    -f include/signal.h                         \
-    -f lib/linux/fork.c                         \
-    -f lib/m2/execve.c                          \
-    -f lib/m2/execv.c                           \
-    -f include/sys/resource.h                   \
-    -f lib/linux/wait4.c                        \
-    -f lib/linux/waitpid.c                      \
-    -f lib/linux/gettimeofday.c                 \
-    -f lib/linux/clock_gettime.c                \
-    -f lib/m2/time.c                            \
-    -f lib/linux/_getcwd.c                      \
-    -f include/limits.h                         \
-    -f lib/m2/getcwd.c                          \
-    -f lib/linux/dup.c                          \
-    -f lib/linux/dup2.c                         \
-    -f lib/string/strcmp.c                      \
-    -f lib/string/memcmp.c                      \
-    -f lib/linux/unlink.c                       \
-    -f src/builtins.c                           \
-    -f src/core.c                               \
-    -f src/display.c                            \
-    -f src/eval-apply.c                         \
-    -f src/gc.c                                 \
-    -f src/hash.c                               \
-    -f src/lib.c                                \
-    -f src/m2.c                                 \
-    -f src/math.c                               \
-    -f src/mes.c                                \
-    -f src/module.c                             \
-    -f include/signal.h                         \
-    -f src/posix.c                              \
-    -f src/reader.c                             \
-    -f src/stack.c                              \
-    -f src/string.c                             \
-    -f src/struct.c                             \
-    -f src/symbol.c                             \
-    -f src/vector.c                             \
+M2-Planet                                               \
+    --debug                                             \
+    --architecture ${stage0_cpu}                        \
+    -D __${cc_cpu}__=1                                  \
+    -D __linux__=1                                      \
+    -f ${srcdest}include/mes/config.h                   \
+    -f ${srcdest}include/mes/lib-mini.h                 \
+    -f ${srcdest}include/mes/lib.h                      \
+    -f ${srcdest}lib/linux/${mes_cpu}-mes-m2/crt1.c     \
+    -f ${srcdest}lib/mes/__init_io.c                    \
+    -f ${srcdest}lib/linux/${mes_cpu}-mes-m2/_exit.c    \
+    -f ${srcdest}lib/linux/${mes_cpu}-mes-m2/_write.c   \
+    -f ${srcdest}lib/mes/globals.c                      \
+    -f ${srcdest}lib/m2/cast.c                          \
+    -f ${srcdest}lib/stdlib/exit.c                      \
+    -f ${srcdest}lib/mes/write.c                        \
+    -f ${srcdest}include/linux/${mes_cpu}/syscall.h     \
+    -f ${srcdest}lib/linux/${mes_cpu}-mes-m2/syscall.c  \
+    -f ${srcdest}lib/stub/__raise.c                     \
+    -f ${srcdest}lib/linux/brk.c                        \
+    -f ${srcdest}lib/linux/malloc.c                     \
+    -f ${srcdest}lib/string/memset.c                    \
+    -f ${srcdest}lib/linux/read.c                       \
+    -f ${srcdest}lib/mes/fdgetc.c                       \
+    -f ${srcdest}lib/stdio/getchar.c                    \
+    -f ${srcdest}lib/stdio/putchar.c                    \
+    -f ${srcdest}lib/stub/__buffered_read.c             \
+    -f ${srcdest}include/errno.h                        \
+    -f ${srcdest}include/fcntl.h                        \
+    -f ${srcdest}lib/linux/_open3.c                     \
+    -f ${srcdest}lib/linux/open.c                       \
+    -f ${srcdest}lib/mes/mes_open.c                     \
+    -f ${srcdest}lib/string/strlen.c                    \
+    -f ${srcdest}lib/mes/eputs.c                        \
+    -f ${srcdest}lib/mes/fdputc.c                       \
+    -f ${srcdest}lib/mes/eputc.c                        \
+                                                        \
+    -f ${srcdest}include/time.h                         \
+    -f ${srcdest}include/sys/time.h                     \
+    -f ${srcdest}include/m2/types.h                     \
+    -f ${srcdest}include/sys/types.h                    \
+    -f ${srcdest}include/sys/utsname.h                  \
+    -f ${srcdest}include/mes/mes.h                      \
+    -f ${srcdest}include/mes/builtins.h                 \
+    -f ${srcdest}include/mes/constants.h                \
+    -f ${srcdest}include/mes/symbols.h                  \
+                                                        \
+    -f ${srcdest}lib/mes/__assert_fail.c                \
+    -f ${srcdest}lib/mes/assert_msg.c                   \
+                                                        \
+    -f ${srcdest}lib/mes/fdputc.c                       \
+    -f ${srcdest}lib/string/strncmp.c                   \
+    -f ${srcdest}lib/posix/getenv.c                     \
+    -f ${srcdest}lib/mes/fdputs.c                       \
+    -f ${srcdest}lib/mes/ntoab.c                        \
+    -f ${srcdest}lib/ctype/isdigit.c                    \
+    -f ${srcdest}lib/ctype/isxdigit.c                   \
+    -f ${srcdest}lib/ctype/isspace.c                    \
+    -f ${srcdest}lib/ctype/isnumber.c                   \
+    -f ${srcdest}lib/mes/abtol.c                        \
+    -f ${srcdest}lib/stdlib/atoi.c                      \
+    -f ${srcdest}lib/string/memcpy.c                    \
+    -f ${srcdest}lib/stdlib/free.c                      \
+    -f ${srcdest}lib/stdlib/realloc.c                   \
+    -f ${srcdest}lib/string/strcpy.c                    \
+    -f ${srcdest}lib/mes/itoa.c                         \
+    -f ${srcdest}lib/mes/ltoa.c                         \
+    -f ${srcdest}lib/mes/fdungetc.c                     \
+    -f ${srcdest}lib/posix/setenv.c                     \
+    -f ${srcdest}lib/linux/access.c                     \
+    -f ${srcdest}include/linux/m2/kernel-stat.h         \
+    -f ${srcdest}include/sys/stat.h                     \
+    -f ${srcdest}lib/linux/chmod.c                      \
+    -f ${srcdest}lib/linux/ioctl3.c                     \
+    -f ${srcdest}include/sys/ioctl.h                    \
+    -f ${srcdest}lib/m2/isatty.c                        \
+    -f ${srcdest}include/signal.h                       \
+    -f ${srcdest}lib/linux/fork.c                       \
+    -f ${srcdest}lib/m2/execve.c                        \
+    -f ${srcdest}lib/m2/execv.c                         \
+    -f ${srcdest}include/sys/resource.h                 \
+    -f ${srcdest}lib/linux/wait4.c                      \
+    -f ${srcdest}lib/linux/waitpid.c                    \
+    -f ${srcdest}lib/linux/gettimeofday.c               \
+    -f ${srcdest}lib/linux/clock_gettime.c              \
+    -f ${srcdest}lib/m2/time.c                          \
+    -f ${srcdest}lib/linux/_getcwd.c                    \
+    -f ${srcdest}include/limits.h                       \
+    -f ${srcdest}lib/m2/getcwd.c                        \
+    -f ${srcdest}lib/linux/dup.c                        \
+    -f ${srcdest}lib/linux/dup2.c                       \
+    -f ${srcdest}lib/string/strcmp.c                    \
+    -f ${srcdest}lib/string/memcmp.c                    \
+    -f ${srcdest}lib/linux/uname.c                      \
+    -f ${srcdest}lib/linux/unlink.c                     \
+    -f ${srcdest}include/fcntl.h                        \
+    -f ${srcdest}src/builtins.c                         \
+    -f ${srcdest}src/core.c                             \
+    -f ${srcdest}src/display.c                          \
+    -f ${srcdest}src/eval-apply.c                       \
+    -f ${srcdest}src/gc.c                               \
+    -f ${srcdest}src/hash.c                             \
+    -f ${srcdest}src/lib.c                              \
+    -f ${srcdest}src/m2.c                               \
+    -f ${srcdest}src/math.c                             \
+    -f ${srcdest}src/mes.c                              \
+    -f ${srcdest}src/module.c                           \
+    -f ${srcdest}include/signal.h                       \
+    -f ${srcdest}src/posix.c                            \
+    -f ${srcdest}src/reader.c                           \
+    -f ${srcdest}src/stack.c                            \
+    -f ${srcdest}src/string.c                           \
+    -f ${srcdest}src/struct.c                           \
+    -f ${srcdest}src/symbol.c                           \
+    -f ${srcdest}src/variable.c                         \
+    -f ${srcdest}src/vector.c                           \
     -o m2/mes.M1
 
 blood-elf ${blood_elf_flag} --little-endian -f m2/mes.M1 -o m2/mes.blood-elf-M1
 
-M1                                              \
-    --architecture ${stage0_cpu}                \
-    --little-endian                             \
-    -f lib/m2/${mes_cpu}/${mes_cpu}_defs.M1     \
-    -f lib/${mes_cpu}-mes/${mes_cpu}.M1         \
-    -f lib/linux/${mes_cpu}-mes-m2/crt1.M1      \
-    -f m2/mes.M1                                \
-    -f m2/mes.blood-elf-M1                      \
+M1                                                      \
+    --architecture ${stage0_cpu}                        \
+    --little-endian                                     \
+    -f ${srcdest}lib/m2/${mes_cpu}/${mes_cpu}_defs.M1   \
+    -f ${srcdest}lib/${mes_cpu}-mes/${mes_cpu}.M1       \
+    -f ${srcdest}lib/linux/${mes_cpu}-mes-m2/crt1.M1    \
+    -f m2/mes.M1                                        \
+    -f m2/mes.blood-elf-M1                              \
     -o m2/mes.hex2
 
 mkdir -p bin
-hex2                                            \
-    --architecture ${stage0_cpu}                \
-    --little-endian                             \
-    --base-address 0x1000000                    \
-    -f lib/m2/${mes_cpu}/ELF-${mes_cpu}.hex2    \
-    -f m2/mes.hex2                              \
+hex2                                                    \
+    --architecture ${stage0_cpu}                        \
+    --little-endian                                     \
+    --base-address ${baseAddress}                       \
+    -f ${srcdest}lib/m2/${mes_cpu}/ELF-${mes_cpu}.hex2  \
+    -f m2/mes.hex2                                      \
     -o bin/mes-m2
 
 cp bin/mes-m2 bin/mes

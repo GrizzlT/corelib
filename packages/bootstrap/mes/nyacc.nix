@@ -13,7 +13,7 @@ core.mkPackage {
     version = "1.00.2";
 
     src = fetchurl {
-      url = "mirror://savannah/nyacc/nyacc-${version}.tar.gz";
+      url = "https://mirror.easyname.at/nongnu/nyacc/nyacc-${version}.tar.gz";
       sha256 = "065ksalfllbdrzl12dz9d9dcxrv97wqxblslngsc6kajvnvlyvpk";
     };
 

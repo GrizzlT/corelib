@@ -12,14 +12,14 @@
 #
 # GrizzlT (2025): This still works for corelib -> it's just collecting the
 #                 sources as described in gnu mes itself. We only change what
-#                 platforms we want to compile for. And we exclude gcc (for now).
+#                 platforms we want to compile for.
 
 set -eu
 
 # Supported platforms
 ARCHS="x86 x86_64 riscv64 riscv32"
 KERNELS="linux"
-COMPILERS="mescc"
+COMPILERS="mescc gcc"
 
 
 format() {
