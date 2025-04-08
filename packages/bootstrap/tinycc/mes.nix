@@ -13,6 +13,7 @@ core:
 
     buildPlatform,
     hostPlatform,
+    targetPlatform,
     autoCall,
     ...
   }:
@@ -74,28 +75,30 @@ core:
     };
   in
     if buildPlatform == hostPlatform
-    then buildTinyccMes {
-      name = "tinycc-mes";
-      inherit src version;
-      prev = tinycc-mes-boot;
-      buildOptions = [
-        "-std=c99"
-        "-D HAVE_BITFIELD=1"
-        "-D HAVE_FLOAT=1"
-        "-D HAVE_LONG_LONG=1"
-        "-D HAVE_SETJMP=1"
-        "-D CONFIG_TCC_PREDEFS=1"
-        "-I ${tccdefs}"
-        "-D CONFIG_TCC_SEMLOCK=0"
-      ];
-      libtccBuildOptions = [
-        "-D HAVE_FLOAT=1"
-        "-D HAVE_LONG_LONG=1"
-        "-D CONFIG_TCC_PREDEFS=1"
-        "-I ${tccdefs}"
-        "-D CONFIG_TCC_SEMLOCK=0"
-      ];
-    }
+    then (if hostPlatform == targetPlatform
+      then buildTinyccMes {
+        name = "tinycc-mes";
+        inherit src version;
+        prev = tinycc-mes-boot;
+        buildOptions = [
+          "-std=c99"
+          "-D HAVE_BITFIELD=1"
+          "-D HAVE_FLOAT=1"
+          "-D HAVE_LONG_LONG=1"
+          "-D HAVE_SETJMP=1"
+          "-D CONFIG_TCC_PREDEFS=1"
+          "-I ${tccdefs}"
+          "-D CONFIG_TCC_SEMLOCK=0"
+        ];
+        libtccBuildOptions = [
+          "-D HAVE_FLOAT=1"
+          "-D HAVE_LONG_LONG=1"
+          "-D CONFIG_TCC_PREDEFS=1"
+          "-I ${tccdefs}"
+          "-D CONFIG_TCC_SEMLOCK=0"
+        ];
+      }
+      else null)
     else null;
 
   dep-defaults = { pkgs, lib, autoCall, ... }: {

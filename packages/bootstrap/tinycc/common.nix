@@ -7,6 +7,7 @@ core.mkPackage {
     tcc-arch,
     buildPlatform,
     hostPlatform,
+    targetPlatform,
     ...
   }: let
 
