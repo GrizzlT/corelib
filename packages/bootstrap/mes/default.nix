@@ -59,10 +59,10 @@ core.mkPackage {
     #### Define sources
 
     name = "mes";
-    version = "0.27";
+    version = "0.25";
     src = fetchurl {
       url = "https://ftpmirror.gnu.org/mes//mes-${version}.tar.gz";
-      hash = "sha256-Az7mVtmM/ASoJuqyfu1uaidtFbu5gKfNcdAPMCJ6qqg=";
+      hash = "sha256-MlJQs1Z+2SA7pwFhyDWvAQeec+vtl7S1u3fKUAuCiUA=";
     };
 
     nyacc = autoCall (import ./nyacc.nix) {};
@@ -71,6 +71,8 @@ core.mkPackage {
       #define MES_VERSION "${version}"
     '';
     sources = (import ./sources.nix).${mes_cpu}.linux.mescc;
+    # add symlink() to libc+tcc so we can use it in ln-boot
+    libc_tcc_SOURCES = sources.libc_tcc_SOURCES ++ [ "lib/linux/symlink.c" ];
 
     srcPost = runCommand.onHost "${name}-src-${version}" ({
       inherit cc_cpu mes_cpu stage0_cpu baseAddress;
@@ -93,7 +95,6 @@ core.mkPackage {
       cp ${config_h version} include/mes/config.h
       mkdir -p include/arch
       cp include/linux/${mes_cpu}/kernel-stat.h include/arch
-      cp include/linux/${mes_cpu}/signal.h include/arch
       cp include/linux/${mes_cpu}/syscall.h include/arch
 
       # Remove pregenerated files
@@ -105,11 +106,9 @@ core.mkPackage {
 
       # Remove environment impurities
       __GUILE_LOAD_PATH="\"''${MES_PREFIX}/mes/module:''${MES_PREFIX}/module:${nyacc.guilePath}\""
+      boot0_scm=mes/module/mes/boot-0.scm
       guile_mes=mes/module/mes/guile.mes
-      guile_module=mes/module/mes/guile-module.mes
-      main_scm=mes/module/mes/main.scm
-      replace --file ''${main_scm} --output ''${main_scm} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
-      replace --file ''${guile_module} --output ''${guile_module} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
+      replace --file ''${boot0_scm} --output ''${boot0_scm} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
       replace --file ''${guile_mes} --output ''${guile_mes} --match-on "(getenv \"GUILE_LOAD_PATH\")" --replace-with ''${__GUILE_LOAD_PATH}
 
       module_mescc_scm=module/mescc/mescc.scm
@@ -141,7 +140,7 @@ core.mkPackage {
       cp ''${mescc_in} ''${bin}/bin/mescc.scm
 
       # Build mes-m2
-      kaem --verbose --strict --file ${./build.kaem}
+      kaem --verbose --strict --file ./kaem.run
       cp bin/mes-m2 ''${bin}/bin/mes-m2
       chmod 555 ''${bin}/bin/mes-m2
     '';
@@ -162,8 +161,8 @@ core.mkPackage {
       "${srcPrefix}/include"
       "-I"
       "${srcPrefix}/include/linux/${mes_cpu}"
-      "--arch=${mes_cpu}"
-      "--base-address=${baseAddress}"
+      # "--arch=${mes_cpu}"
+      # "--base-address=${baseAddress}"
       # "--kernel=linux"
     ];# ++ (optionals (blood_elf_flag != "") ["-m" "64"]);
 
@@ -199,7 +198,7 @@ core.mkPackage {
     libc-mini = mkLib "libc-mini" sources.libc_mini_SOURCES;
     libmescc = mkLib "libmescc" sources.libmescc_SOURCES;
     libc = mkLib "libc" sources.libc_SOURCES;
-    libc_tcc = mkLib "libc+tcc" sources.libc_tcc_SOURCES;
+    libc_tcc = mkLib "libc+tcc" libc_tcc_SOURCES;
 
     # Recompile Mes and Mes C library using mes-m2 bootstrapped Mes
     libs = runCommand.onHost "${name}-m2-libs-${version}" {}
@@ -256,7 +255,10 @@ core.mkPackage {
   in
     if buildPlatform == hostPlatform
     then compiler
-    else null;
+    else {
+      inherit buildPlatform hostPlatform;
+      inherit src srcPost srcPrefix;
+    };
 
   dep-defaults = { pkgs, lib, autoCall, ... }: {
     inherit autoCall;

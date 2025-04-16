@@ -44,8 +44,8 @@ core:
 
     tccdefs = runCommand.onBuild "tccdefs-${version}" { } ''
       mkdir ''${out}
-      ${tinycc-bootstrappable.onBuild.compiler}/bin/tcc \
-        -B ${tinycc-bootstrappable.onBuild.libs}/lib \
+      ${tinycc-bootstrappable.onBuildForBuild.compiler}/bin/tcc \
+        -B ${tinycc-bootstrappable.onBuildForBuild.libs}/lib \
         -DC2STR \
         -o c2str \
         ${src}/conftest.c
@@ -55,7 +55,7 @@ core:
     tinycc-mes-boot = buildTinyccMes {
       name = "tinycc-mes-boot";
       inherit src version;
-      prev = tinycc-bootstrappable.onBuild;
+      prev = tinycc-bootstrappable.onBuildForBuild;
       buildOptions = [
         "-D HAVE_BITFIELD=1"
         "-D HAVE_FLOAT=1"
@@ -104,7 +104,7 @@ core:
   dep-defaults = { pkgs, lib, autoCall, ... }: {
     inherit autoCall;
     inherit (pkgs.stage0) runCommand;
-    inherit (pkgs.self) tinycc-bootstrappable;
+    inherit (pkgs.self) tinycc-bootstrappable tinycc-mes;
     fetchurl = import ../../stage0-posix/bootstrap-fetchurl.nix;
   };
 }

@@ -29,14 +29,13 @@ core.mkPackage {
     lastLibc = std.lists.drop 100 libc_gnu_SOURCES;
 
   in
-    if buildPlatform == hostPlatform
-    then runCommand.onHost "mes-libc"
+    runCommand.onHost "mes-libc"
       {
         tools = [ ln-boot.onBuild ];
 
         public.CFLAGS = "-DHAVE_CONFIG_H=1 -I${mes-libc.onHost}/include -I${mes-libc.onHost}/include/linux/${mes_cpu}";
       }
-      ''
+      /* bash */ ''
         cd ${mes.onHost.srcPrefix}
 
         # mescc compiled libc.a
@@ -59,8 +58,7 @@ core.mkPackage {
 
         # Install headers
         ln -s ${mes.onHost.srcPrefix}/include ''${out}/include
-      ''
-    else null;
+      '';
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib) std;

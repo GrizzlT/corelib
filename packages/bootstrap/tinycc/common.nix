@@ -13,7 +13,8 @@ core.mkPackage {
 
     inherit (std.strings) concatStringsSep;
 
-    tcc_target_arch = tcc-arch.tcc_target_arch hostPlatform;
+    tcc_target_arch = tcc-arch.tcc_target_arch targetPlatform;
+    tcc_host_arch = tcc-arch.tcc_target_arch hostPlatform;
 
     recompileLibc = {
       tcc,
@@ -22,25 +23,25 @@ core.mkPackage {
       src,
       libtccOptions,
     }: let
-      crt = runCommand.onHost "crt" { } ''
+      crt = runCommand.onTarget "crt" { } ''
         mkdir -p ''${out}/lib
-        ${tcc}/bin/tcc ${mes-libc.onHost.CFLAGS} -c -o ''${out}/lib/crt1.o ${mes-libc.onHost}/lib/crt1.c
-        ${tcc}/bin/tcc ${mes-libc.onHost.CFLAGS} -c -o ''${out}/lib/crtn.o ${mes-libc.onHost}/lib/crtn.c
-        ${tcc}/bin/tcc ${mes-libc.onHost.CFLAGS} -c -o ''${out}/lib/crti.o ${mes-libc.onHost}/lib/crti.c
+        ${tcc}/bin/tcc ${mes-libc.onTarget.CFLAGS} -c -o ''${out}/lib/crt1.o ${mes-libc.onTarget}/lib/crt1.c
+        ${tcc}/bin/tcc ${mes-libc.onTarget.CFLAGS} -c -o ''${out}/lib/crtn.o ${mes-libc.onTarget}/lib/crtn.c
+        ${tcc}/bin/tcc ${mes-libc.onTarget.CFLAGS} -c -o ''${out}/lib/crti.o ${mes-libc.onTarget}/lib/crti.c
       '';
 
       library =
         lib: options: source:
-        runCommand.onHost "${lib}.a" { } ''
+        runCommand.onTarget "${lib}.a" { } ''
           ${tcc}/bin/tcc ${options} -c -o ${lib}.o ${source}
           ${tcc}/bin/tcc -ar cr ''${out} ${lib}.o
         '';
 
       libtcc1 = library "libtcc1" libtccOptions "${src}/lib/libtcc1.c";
-      libc = library "libc" mes-libc.onHost.CFLAGS "${mes-libc.onHost}/lib/libc.c";
-      libgetopt = library "libgetopt" mes-libc.onHost.CFLAGS "${mes-libc.onHost}/lib/libgetopt.c";
+      libc = library "libc" mes-libc.onTarget.CFLAGS "${mes-libc.onTarget}/lib/libc.c";
+      libgetopt = library "libgetopt" mes-libc.onTarget.CFLAGS "${mes-libc.onTarget}/lib/libgetopt.c";
     in
-      runCommand.onHost "${name}-libs-${version}" { } ''
+      runCommand.onTarget "${name}-libs-${version}" { } ''
         mkdir -p ''${out}/lib
         cp ${crt}/lib/crt1.o ''${out}/lib
         cp ${crt}/lib/crtn.o ''${out}/lib
@@ -65,7 +66,7 @@ core.mkPackage {
           [
             "-c"
             "-D"
-            "TCC_TARGET_${tcc_target_arch}=1"
+            "TCC_TARGET_${tcc_host_arch}=1"
           ]
           ++ libtccBuildOptions
         );
@@ -114,12 +115,11 @@ core.mkPackage {
         };
       in
       {
-        inherit prev compiler libs;
+        inherit prev compiler libs src;
+        inherit buildPlatform hostPlatform targetPlatform;
       };
 
   in {
-    inherit buildPlatform hostPlatform;
-
     inherit recompileLibc buildTinyccMes;
   };
 
