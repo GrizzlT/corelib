@@ -15,7 +15,7 @@ core.mkPackage {
 
   in mkMinimalPackage.onHost {
     name = "kaem";
-    version = kaem-unwrapped.version;
+    version = "1.6.0";
     drv = {
       builder = mescc-tools-boot2.onBuild.kaem-unwrapped;
       args = [

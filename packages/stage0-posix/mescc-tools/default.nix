@@ -51,7 +51,7 @@ core.mkPackage {
       name:
       mkMinimalPackage.onHost {
         name = "mescc-tools-extra-${name}";
-        version = "1.6.0";
+        version = "1.8.0";
         drv = {
           builder = kaem-unwrapped;
           args = [
@@ -62,6 +62,8 @@ core.mkPackage {
               ''${M2} --architecture ${m2libcArch} \
                 -f ''${m2libc}/sys/types.h \
                 -f ''${m2libc}/stddef.h \
+                -f ''${m2libc}/signal.h \
+                -f ''${m2libc}/sys/utsname.h \
                 -f ''${m2libc}/${m2libcArch}/linux/fcntl.c \
                 -f ''${m2libc}/fcntl.c \
                 -f ''${m2libc}/${m2libcArch}/linux/unistd.c \
@@ -110,7 +112,7 @@ core.mkPackage {
 
   in mkMinimalPackage.onHost {
     name = "mescc-tools";
-    version = "1.6.0";
+    version = "1.8.0";
     drv = {
       builder = kaem-unwrapped;
       args = [
@@ -150,7 +152,7 @@ core.mkPackage {
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;
     inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools-boot2 mescc-tools;
-    src = pkgs.self.minimal-bootstrap-sources.onHost;
-    m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
+    src = pkgs.self.minimal-bootstrap-sources;
+    m2libc = pkgs.self.minimal-bootstrap-sources.m2libc;
   };
 }

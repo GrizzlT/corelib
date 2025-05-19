@@ -82,7 +82,7 @@ core.mkPackage {
 
     run = name: builder: args: mkMinimalPackage.onHost {
       inherit name;
-      version = "1.6.0";
+      version = "1.8.0";
       drv = {
         inherit builder args;
       };
@@ -127,17 +127,10 @@ core.mkPackage {
     # Phase-2b Build catm from hex2 #
     #################################
 
-    catm =
-      # if hostPlatform.isAarch64 then
-      #   run "catm" hex1 [
-      #     "${src}/${stage0Arch}/catm_${stage0Arch}.hex1"
-      #     out
-      #   ]
-      # else
-        run "catm" hex2-0 [
-          "${src}/${stage0Arch}/catm_${stage0Arch}.hex2"
-          out
-        ];
+    catm = run "catm" hex2-0 [
+      "${src}/${stage0Arch}/catm_${stage0Arch}.hex2"
+      out
+    ];
 
     # catm removes the need for cat or shell support for redirection by providing
     # equivalent functionality via catm output_file input1 input2 ... inputN
@@ -329,11 +322,15 @@ core.mkPackage {
       "-f"
       "${m2libc}/stddef.h"
       "-f"
-      "${m2libc}/${m2libcArch}/linux/unistd.c"
+      "${m2libc}/string.c"
       "-f"
       "${m2libc}/${m2libcArch}/linux/fcntl.c"
       "-f"
       "${m2libc}/fcntl.c"
+      "-f"
+      "${m2libc}/sys/utsname.h"
+      "-f"
+      "${m2libc}/${m2libcArch}/linux/unistd.c"
       "-f"
       "${m2libc}/${m2libcArch}/linux/sys/stat.c"
       "-f"
@@ -400,7 +397,7 @@ core.mkPackage {
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;
     inherit (pkgs.self) mkMinimalPackage hex0 mescc-tools-boot;
-    src = pkgs.self.minimal-bootstrap-sources.onHost;
-    m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
+    src = pkgs.self.minimal-bootstrap-sources;
+    m2libc = pkgs.self.minimal-bootstrap-sources.m2libc;
   };
 }

@@ -32,9 +32,10 @@ CC mkdir.c -o ${out}/bin/mkdir
 CC untar.c -o ${out}/bin/untar
 CC ungz.c -o ${out}/bin/ungz
 CC unbz2.c -o ${out}/bin/unbz2
+CC unxz.c -o ${out}/bin/unxz
 CC catm.c -o ${out}/bin/catm
 CC cp.c -o ${out}/bin/cp
 CC chmod.c -o ${out}/bin/chmod
 CC rm.c -o ${out}/bin/rm
 CC replace.c -o ${out}/bin/replace
-
+CC wrap.c -o ${out}/bin/wrap

@@ -85,7 +85,7 @@ core.mkPackage {
 
     run = name: builder: args: mkMinimalPackage.onHost {
       inherit name;
-      version = "1.6.0";
+      version = "1.8.0";
       drv = {
         inherit builder args;
       };
@@ -93,13 +93,11 @@ core.mkPackage {
         targetPlatform = hostPlatform;
       };
     };
-
-    # TODO: compile for different architecture based on platform triple
   in {
 
     inherit buildPlatform hostPlatform;
 
-    ## Stages copied from nixpkgs
+    ## Stages copied from oriansj's stage0-posix
 
     # This is the last stage where we will be using the handwritten hex2 and instead
     # be using the far more powerful, cross-platform version with a bunch more goodies
@@ -116,13 +114,17 @@ core.mkPackage {
       "-f"
       "${m2libc}/stddef.h"
       "-f"
+      "${m2libc}/string.c"
+      "-f"
+      "${m2libc}/signal.h"
+      "-f"
       "${m2libc}/${m2libcArch}/linux/fcntl.c"
       "-f"
       "${m2libc}/fcntl.c"
       "-f"
-      "${m2libc}/${m2libcArch}/linux/unistd.c"
+      "${m2libc}/sys/utsname.h"
       "-f"
-      "${m2libc}/string.c"
+      "${m2libc}/${m2libcArch}/linux/unistd.c"
       "-f"
       "${m2libc}/stdlib.c"
       "-f"
@@ -179,11 +181,15 @@ core.mkPackage {
       "-f"
       "${m2libc}/stddef.h"
       "-f"
-      "${m2libc}/${m2libcArch}/linux/unistd.c"
+      "${m2libc}/signal.h"
       "-f"
       "${m2libc}/${m2libcArch}/linux/fcntl.c"
       "-f"
       "${m2libc}/fcntl.c"
+      "-f"
+      "${m2libc}/sys/utsname.h"
+      "-f"
+      "${m2libc}/${m2libcArch}/linux/unistd.c"
       "-f"
       "${m2libc}/${m2libcArch}/linux/sys/stat.c"
       "-f"
@@ -248,11 +254,15 @@ core.mkPackage {
       "-f"
       "${m2libc}/string.c"
       "-f"
-      "${m2libc}/${m2libcArch}/linux/unistd.c"
+      "${m2libc}/signal.h"
       "-f"
       "${m2libc}/${m2libcArch}/linux/fcntl.c"
       "-f"
       "${m2libc}/fcntl.c"
+      "-f"
+      "${m2libc}/sys/utsname.h"
+      "-f"
+      "${m2libc}/${m2libcArch}/linux/unistd.c"
       "-f"
       "${m2libc}/stdlib.c"
       "-f"
@@ -384,7 +394,7 @@ core.mkPackage {
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib.self) platforms;
     inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools-boot2;
-    src = pkgs.self.minimal-bootstrap-sources.onHost;
-    m2libc = pkgs.self.minimal-bootstrap-sources.onHost.m2libc;
+    src = pkgs.self.minimal-bootstrap-sources;
+    m2libc = pkgs.self.minimal-bootstrap-sources.m2libc;
   };
 }
