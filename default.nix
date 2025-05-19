@@ -2,12 +2,13 @@ let
   inherit (import ./consume-prototype.nix) bootstrap;
 
   # example package set
-  stdenv = import ./packages/stage0-posix;
+  stage0 = import ./packages/stage0-posix;
+  bootstrap-pkgs = import ./packages/bootstrap;
 
   # TODO: provide convenience function for 1 or 2 platforms
   pkgs = bootstrap (self: let
     buildSystem = "i686-linux";
-    runSystem = "riscv64-linux";
+    runSystem = "x86_64-linux";
   in {
     # final = {
     #   triple = { buildPlatform = buildSystem; hostPlatform = buildSystem; targetPlatform = buildSystem; };
@@ -39,6 +40,6 @@ let
     #   triple = { buildPlatform = buildSystem; hostPlatform = buildSystem; targetPlatform = buildSystem; };
     #   adjacent = { pkgsBuildBuild = self.first; pkgsBuildHost = self.first; pkgsBuildTarget = self.first; pkgsHostHost = self.first; pkgsHostTarget = self.first; pkgsTargetTarget = self.first; };
     # };
-  }) { inherit stdenv; };
+  }) { inherit stage0; bootstrap = bootstrap-pkgs; };
 
 in pkgs

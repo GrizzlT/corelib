@@ -3,6 +3,7 @@ let
 
   stage0 = mkPackageSet {
     packages = self: {
+      fetchurl = import ./bootstrap-fetchurl.nix;
       mkMinimalPackage = import ./mk-minimal-package.nix;
 
       ## Stage 0 posix
@@ -17,7 +18,7 @@ let
       writeText = import ./write-text.nix;
       writeTextFile = import ./write-text-file.nix;
       kaem = import ./kaem;
-      runCommand = import ./run-command.nix;
+      runCommand = import ./run-command2.nix;
 
       ## GCC bootstrap
     };

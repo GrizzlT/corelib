@@ -163,10 +163,9 @@ mkdir -p bin
 hex2                                                    \
     --architecture ${stage0_cpu}                        \
     --little-endian                                     \
-    --base-address ${baseAddress}                       \
+    --base-address 0x1000000                            \
     -f ${srcdest}lib/m2/${mes_cpu}/ELF-${mes_cpu}.hex2  \
     -f m2/mes.hex2                                      \
     -o bin/mes-m2
 
 cp bin/mes-m2 bin/mes
-

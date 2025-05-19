@@ -46,8 +46,7 @@ core.mkPackage {
 
   dep-defaults = { pkgs, lib, ... }: {
     src = pkgs.self.minimal-bootstrap-sources.onHost;
-    inherit (pkgs.self) mkMinimalPackage hex0;
+    inherit (pkgs.self) fetchurl mkMinimalPackage hex0;
     inherit (lib.self) platforms;
-    fetchurl = import ./bootstrap-fetchurl.nix;
   };
 }
