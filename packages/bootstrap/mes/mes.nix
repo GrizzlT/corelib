@@ -1,35 +1,21 @@
 core:
-{
+core.mkPackage {
   function = {
     std,
     platforms,
     fetchurl,
+    mes,
     runCommand,
-    m2libc,
+    autoCall,
     buildPlatform,
     hostPlatform,
     ...
   }: let
-    inherit (std.attrsets) optionalAttrs;
     inherit (std.strings) replaceStrings concatMapStringsSep;
+    inherit (mes.onHost) srcPrefix; # onHost to get correct include flags for libc
 
     #####################
     #### Define cpu flags
-
-    cc_cpu = {
-      "i686-linux" = "i386";
-      "x86_64-linux" = "x86_64";
-      "riscv64-linux" = "riscv64";
-      "riscv32-linux" = "riscv32";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
-
-    stage0_cpu = {
-      "i686-linux" = "x86";
-      "x86_64-linux" = "amd64";
-      "riscv64-linux" = "riscv64";
-      "riscv32-linux" = "riscv32";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
-
     mes_cpu = {
       "i686-linux" = "x86";
       "x86_64-linux" = "x86_64";
@@ -37,72 +23,154 @@ core:
       "riscv32-linux" = "riscv32";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
-    baseAddress = platforms.baseAddress hostPlatform;
-
     #############
     #### Define sources
-    name = "mes";
     version = "0.27";
-    src = fetchurl {
-      url = "https://ftpmirror.gnu.org/mes//mes-${version}.tar.gz";
-      hash = "sha256-Az7mVtmM/ASoJuqyfu1uaidtFbu5gKfNcdAPMCJ6qqg=";
-    };
+    mes-bootstrap = autoCall (import ./mes-boot.nix) {};
+    nyacc = autoCall (import ./nyacc.nix) {};
+    sources = (import ./sources.nix) { inherit mes_cpu; };
 
-    config_h = builtins.toFile "config.h" ''
-      #undef SYSTEM_LIBC
-      #define MES_VERSION "${version}"
-    '';
+    stripExt = source: replaceStrings [ ".c" ] [ "" ] (builtins.baseNameOf source);
 
-    srcPost = runCommand.onHost {
-      inherit version;
-      name = "${name}-src";
+    mesBin = if buildPlatform == hostPlatform then
+      mes-bootstrap.srcPost.bin
+    else mes.onBuild;
+
+    compile = source: runCommand.onHost {
+      name = stripExt source;
       env = {
-        inherit cc_cpu mes_cpu stage0_cpu m2libc;
-        outputs = [
-          "out" "bin"
-        ];
+        MES_ARENA = 20000000;
+        MES_MAX_ARENA = 20000000;
+        MES_STACK = 6000000;
+        MES_PREFIX = "${srcPrefix}";
+
+        GUILE_LOAD_PATH = "${srcPrefix}/mes/module:${srcPrefix}/module:${nyacc.guilePath}";
+
         buildCommand = /* bash */ ''
-          ungz --file ${src} --output mes.tar
           mkdir ''${out}
           cd ''${out}
-          untar --non-strict --file ''${NIX_BUILD_TOP}/mes.tar # ignore symlinks
 
-          MES_PREFIX="''${out}/mes-${version}"
-          cd ''${MES_PREFIX}
-
-          cp ${config_h} include/mes/config.h
-          mkdir -p include/arch
-          cp include/linux/${mes_cpu}/kernel-stat.h include/arch
-          cp include/linux/${mes_cpu}/signal.h include/arch
-          cp include/linux/${mes_cpu}/syscall.h include/arch
-
-          # These files are symlinked in the repo
-          cp mes/module/srfi/srfi-9-struct.mes mes/module/srfi/srfi-9.mes
-          cp mes/module/srfi/srfi-9/gnu-struct.mes mes/module/srfi/srfi-9/gnu.mes
-
-          mkdir -p ''${bin}/bin
-
-          kaem --verbose --strict --file ${./build.kaem}
-          cp bin/mes ''${bin}/bin/mes
-          chmod 555 ''${bin}/bin/mes
+          # compile source
+          ${mesBin}/bin/mes \
+            --no-auto-compile \
+            -e main \
+            ${mes.onBuild.srcPrefix}/module/mescc.scm \
+            -- \
+            --arch ${mes_cpu} \
+            -D HAVE_CONFIG_H=1 \
+            -I ${srcPrefix}/include \
+            -L ${srcPrefix}/lib \
+            -c ${srcPrefix}/${source}
         '';
       };
     };
 
-    srcPrefix = "${srcPost.out}/mes-${version}";
+    crt1 = compile "/lib/linux/${mes_cpu}-mes-mescc/crt1.c";
+    getRes = suffix: res: "${res}/${res.name}${suffix}";
 
-  in {
-    inherit src srcPost srcPrefix;
-    inherit buildPlatform hostPlatform;
+    archive = out: sources: "catm ${out} ${concatMapStringsSep " " (getRes ".o") sources}";
+    sourceArchive = out: sources: "catm ${out} ${concatMapStringsSep " " (getRes ".s") sources}";
+
+    mkLib = libname: sources: let
+      os = map compile sources;
+    in runCommand.onHost {
+      name = "mes-${libname}";
+      inherit version;
+      env.buildCommand = /* bash */ ''
+        LIBDIR=''${out}/lib
+        mkdir -p ''${LIBDIR}
+        cd ''${LIBDIR}
+
+        ${archive "${libname}.a" os}
+        ${sourceArchive "${libname}.s" os}
+      '';
+    };
+
+    libc-mini = mkLib "libc-mini" sources.libc-mini;
+    libmescc = mkLib "libmescc" sources.libmescc;
+    libc = mkLib "libc" sources.libc;
+    libc_tcc = mkLib "libc+tcc" sources.libc_tcc;
+
+    libs = runCommand.onHost {
+      name = "mes-m2-libs";
+      inherit version;
+      env.buildCommand = /* bash */ ''
+        LIBDIR=''${out}/lib
+        mkdir -p ''${LIBDIR}/${mes_cpu}-mes
+
+        # crt1.o
+        cp ${crt1}/crt1.o ''${LIBDIR}/${mes_cpu}-mes
+        cp ${crt1}/crt1.s ''${LIBDIR}/${mes_cpu}-mes
+
+        # libc-mini.a
+        cp ${libc-mini}/lib/libc-mini.a ''${LIBDIR}/${mes_cpu}-mes
+        cp ${libc-mini}/lib/libc-mini.s ''${LIBDIR}/${mes_cpu}-mes
+
+        # libmescc.a
+        cp ${libmescc}/lib/libmescc.a ''${LIBDIR}/${mes_cpu}-mes
+        cp ${libmescc}/lib/libmescc.s ''${LIBDIR}/${mes_cpu}-mes
+
+        # libc.a
+        cp ${libc}/lib/libc.a ''${LIBDIR}/${mes_cpu}-mes
+        cp ${libc}/lib/libc.s ''${LIBDIR}/${mes_cpu}-mes
+
+        # libc+tcc.a
+        cp ${libc_tcc}/lib/libc+tcc.a ''${LIBDIR}/${mes_cpu}-mes
+        cp ${libc_tcc}/lib/libc+tcc.s ''${LIBDIR}/${mes_cpu}-mes
+      '';
+    };
+
+  in runCommand.onHost {
+    name = "mes";
+    inherit version;
+
+    env = {
+      MES_ARENA = 20000000;
+      MES_MAX_ARENA = 20000000;
+      MES_STACK = 6000000;
+      MES_PREFIX = "${srcPrefix}";
+
+      GUILE_LOAD_PATH = "${srcPrefix}/mes/module:${srcPrefix}/module:${nyacc.guilePath}";
+
+      buildCommand = /* bash */ ''
+        mkdir -p ''${out}/bin
+
+        # compile source
+        ${mesBin}/bin/mes                           \
+          --no-auto-compile                         \
+          -e main                                   \
+          ${mes.onBuild.srcPrefix}/module/mescc.scm \
+          --                                        \
+          --arch ${mes_cpu}                         \
+          -L ${srcPrefix}/lib                       \
+          -L ${libs}/lib                            \
+          -lc                                       \
+          -lmescc                                   \
+          -nostdlib                                 \
+          -o ''${out}/bin/mes                       \
+          ${libs}/lib/${mes_cpu}-mes/crt1.o         \
+          ${concatMapStringsSep " " (getRes ".o") (map compile sources.mes)}
+      '';
+    };
+
+    public = {
+      inherit (mes-bootstrap) src srcPost srcPrefix;
+      inherit libs;
+    };
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
+  dep-defaults = { pkgs, lib, autoCall, ... }: {
+    inherit autoCall;
     inherit (lib) std;
     inherit (lib.stage0) platforms;
-    inherit (pkgs.stage0.minimal-bootstrap-sources) m2libc;
     inherit (pkgs.stage0)
+      kaem
       runCommand
       fetchurl
+      writeTextFile
+      ;
+    inherit (pkgs.self)
+      mes
       ;
   };
 }

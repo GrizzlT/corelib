@@ -8,8 +8,7 @@ core.mkPackage {
   let
     name = "nyacc";
     # NYACC is a tightly coupled dependency of mes. This version is known to work
-    # with mes 0.25.
-    # https://git.savannah.gnu.org/cgit/mes.git/tree/INSTALL?h=v0.25#n31
+    # with mes 0.27.
     version = "1.09.4";
 
     src = fetchurl {
