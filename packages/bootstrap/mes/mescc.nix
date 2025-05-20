@@ -4,10 +4,31 @@ core.mkPackage {
     std,
     platforms,
     fetchurl,
+    mes,
     runCommand,
+    buildPlatform,
     hostPlatform,
     ...
   }: let
+    inherit (std.strings) replaceStrings concatMapStringsSep;
+    inherit (mes.onHost) srcPrefix;
+
+    #####################
+    #### Define cpu flags
+
+    cc_cpu = {
+      "i686-linux" = "i386";
+      "x86_64-linux" = "x86_64";
+      "riscv64-linux" = "riscv64";
+      "riscv32-linux" = "riscv32";
+    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+
+    stage0_cpu = {
+      "i686-linux" = "x86";
+      "x86_64-linux" = "amd64";
+      "riscv64-linux" = "riscv64";
+      "riscv32-linux" = "riscv32";
+    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
     mes_cpu = {
       "i686-linux" = "x86";
@@ -16,54 +37,65 @@ core.mkPackage {
       "riscv32-linux" = "riscv32";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
 
+    blood_elf_flag = {
+      "i686-linux" = "";
+      "x86_64-linux" = "--64";
+      "riscv64-linux" = "--64";
+      "riscv32-linux" = "";
+    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+
+    baseAddress = platforms.baseAddress hostPlatform;
+
     #############
     #### Define sources
-    name = "mes";
+    name = "mescc";
     version = "0.27";
-    src = fetchurl {
-      url = "https://ftpmirror.gnu.org/mes//mes-${version}.tar.gz";
-      hash = "sha256-Az7mVtmM/ASoJuqyfu1uaidtFbu5gKfNcdAPMCJ6qqg=";
+
+    stripExt = source: replaceStrings [ ".c" ] [ "" ] (builtins.baseNameOf source);
+
+    compile = source: runCommand.onHost {
+      name = stripExt source;
+      env = {
+        MES_ARENA = 20000000;
+        MES_MAX_ARENA = 20000000;
+        MES_STACK = 6000000;
+        MES_PREFIX = "${srcPrefix}";
+
+        # GUILE_LOAD_PATH = "$abs_top_srcdir/module:$abs_top_srcdir/mes:$abs_top_srcdir/guix${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH";
+        GUILE_LOAD_PATH = "${srcPrefix}/mes/module:${srcPrefix}/module";
+        includedir = "${srcPrefix}/include";
+        libdir = "${srcPrefix}/lib";
+
+        buildCommand = /* bash */ ''
+          mkdir ''${out}
+          cd ''${out}
+          echo ''${GUILE_LOAD_PATH}
+
+          # compile source
+          ${mes.onBuild.srcPost.bin}/bin/mes \
+            --no-auto-compile \
+            -e main \
+            -L "" \
+            -C "" \
+            ${srcPrefix}/module/mescc.scm \
+            --help
+        '';
+      };
     };
 
-    config_h = builtins.toFile "config.h" ''
-      #undef SYSTEM_LIBC
-      #define MES_VERSION "${version}"
-    '';
-
-    srcPost = runCommand.onHost {
-      inherit version;
-      name = "${name}-src";
-      env.buildCommand = /* bash */ ''
-        ungz --file ${src} --output mes.tar
-        mkdir ''${out}
-        cd ''${out}
-        untar --non-strict --file ''${NIX_BUILD_TOP}/mes.tar # ignore symlinks
-
-        MES_PREFIX="''${out}/mes-${version}"
-        cd ''${MES_PREFIX}
-
-        cp ${config_h} include/mes/config.h
-        mkdir -p include/arch
-        cp include/linux/${mes_cpu}/kernel-stat.h include/arch
-        cp include/linux/${mes_cpu}/signal.h include/arch
-        cp include/linux/${mes_cpu}/syscall.h include/arch
-
-        # These files are symlinked in the repo
-        cp mes/module/srfi/srfi-9-struct.mes mes/module/srfi/srfi-9.mes
-        cp mes/module/srfi/srfi-9/gnu-struct.mes mes/module/srfi/srfi-9/gnu.mes
-
-
-      '';
-    };
-
-  in srcPost;
+  in compile "/lib/linux/${mes_cpu}-mes-mescc/crt1.c";
 
   dep-defaults = { pkgs, lib, ... }: {
     inherit (lib) std;
     inherit (lib.stage0) platforms;
     inherit (pkgs.stage0)
+      kaem
       runCommand
       fetchurl
+      writeTextFile
+      ;
+    inherit (pkgs.self)
+      mes
       ;
   };
 }

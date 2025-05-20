@@ -25,7 +25,7 @@ core:
         "--verbose"
         "--strict"
         "--file"
-        (writeText "${self.package.name}${if self.package.version != "" then "-${self.package.version}" else ""}-builder" env.buildCommand)
+        (writeText "${self.package.name}${if (self.package.version != null && self.package.version != "") then "-${self.package.version}" else ""}-builder" env.buildCommand)
       ];
       PATH = makeBinPath (
         (env.tools or [])

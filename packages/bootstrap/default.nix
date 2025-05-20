@@ -3,7 +3,8 @@ let
 
   bootstrap = mkPackageSet {
     packages = self: {
-      mes = import ./mes/mescc.nix;
+      mes = import ./mes/mes.nix;
+      mescc = import ./mes/mescc.nix;
       # mes-libc = import ./mes/libc.nix;
       # ln-boot = import ./ln-boot;
       #

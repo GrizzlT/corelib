@@ -25,7 +25,6 @@
 cc_cpu=${cc_cpu:-i386}
 mes_cpu=${mes_cpu:-x86}
 stage0_cpu=${stage0_cpu:-x86}
-blood_elf_flag=${blood_elf_flag:---little-endian}
 
 mkdir -p m2
 
@@ -147,11 +146,12 @@ M2-Planet                                               \
     -f ${srcdest}src/vector.c                           \
     -o m2/mes.M1
 
-blood-elf ${blood_elf_flag} --little-endian -f m2/mes.M1 -o m2/mes.blood-elf-M1
+blood-elf --little-endian -f m2/mes.M1 -o m2/mes.blood-elf-M1
 
 M1                                                      \
     --architecture ${stage0_cpu}                        \
     --little-endian                                     \
+    -f ${m2libc}/${stage0_cpu}/${stage0_cpu}_defs.M1    \
     -f ${srcdest}lib/m2/${mes_cpu}/${mes_cpu}_defs.M1   \
     -f ${srcdest}lib/${mes_cpu}-mes/${mes_cpu}.M1       \
     -f ${srcdest}lib/linux/${mes_cpu}-mes-m2/crt1.M1    \
