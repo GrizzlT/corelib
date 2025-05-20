@@ -10,8 +10,6 @@ core:
     hostPlatform,
     ...
   }: let
-    inherit (std.attrsets) optionalAttrs;
-    inherit (std.strings) replaceStrings concatMapStringsSep;
 
     #####################
     #### Define cpu flags
@@ -36,8 +34,6 @@ core:
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
     }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
-
-    baseAddress = platforms.baseAddress hostPlatform;
 
     #############
     #### Define sources
