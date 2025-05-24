@@ -7,8 +7,9 @@ let
 
   # TODO: provide convenience function for 1 or 2 platforms
   pkgs = bootstrap (self: let
-    buildSystem = "i686-linux";
-    runSystem = "riscv64-linux";
+    buildSystem = "x86_64-linux";
+    # runSystem = "i686-linux";
+    runSystem = "x86_64-linux";
   in {
     # final = {
     #   triple = { buildPlatform = buildSystem; hostPlatform = buildSystem; targetPlatform = buildSystem; };

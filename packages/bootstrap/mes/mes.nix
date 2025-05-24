@@ -3,6 +3,7 @@ core.mkPackage {
   function = {
     std,
     platforms,
+    mes-arch,
     fetchurl,
     mes,
     runCommand,
@@ -16,12 +17,7 @@ core.mkPackage {
 
     #####################
     #### Define cpu flags
-    mes_cpu = {
-      "i686-linux" = "x86";
-      "x86_64-linux" = "x86_64";
-      "riscv64-linux" = "riscv64";
-      "riscv32-linux" = "riscv32";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    mes_cpu = mes-arch.mes_cpu hostPlatform;
 
     #############
     #### Define sources
@@ -162,6 +158,7 @@ core.mkPackage {
   dep-defaults = { pkgs, lib, autoCall, ... }: {
     inherit autoCall;
     inherit (lib) std;
+    inherit (lib.self) mes-arch;
     inherit (lib.stage0) platforms;
     inherit (pkgs.stage0)
       kaem

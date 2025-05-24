@@ -9,11 +9,11 @@ core.mkPackage {
     name = "nyacc";
     # NYACC is a tightly coupled dependency of mes. This version is known to work
     # with mes 0.27.
-    version = "1.09.4";
+    version = "1.00.2";
 
     src = fetchurl {
       url = "https://mirror.easyname.at/nongnu/nyacc/nyacc-${version}.tar.gz";
-      sha256 = "sha256-7mVG1OkY/GtZtxarvkLBSgz0VPWoK/ZEZxzO1bnXAUE=";
+      sha256 = "sha256-825Pt91STcP0s1TT1TE/aefOWmrpNxHoz21R6qjSsxg=";
     };
 
     nyacc = runCommand.onHost {
