@@ -1,7 +1,6 @@
-core:
+lib:
 {
   function = {
-    std,
     kaem,
     mescc-tools,
     mescc-tools-extra,
@@ -9,14 +8,14 @@ core:
     mkMinimalPackage,
     ...
   }: let
-    inherit (std.strings) makeBinPath;
+    inherit (lib.std.strings) makeBinPath;
   in {
     name,
     version ? null,
     shell ? "${kaem.onBuild}/bin/kaem",
     env,
     public ? {},
-  }: mkMinimalPackage.onHost {
+  }: mkMinimalPackage.onRun {
     inherit name version public;
 
     drv = self: ({
@@ -38,8 +37,7 @@ core:
     } // (removeAttrs env [ "tools" "args" "buildCommand" ]));
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib) std;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self)
       kaem
       mescc-tools

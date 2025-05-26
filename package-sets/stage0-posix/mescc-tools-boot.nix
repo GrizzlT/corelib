@@ -29,10 +29,10 @@
 # Warning all binaries prior to the use of blood-elf will not be readable by
 # Objdump, you may need to use ndism or gdb to view the assembly in the binary.
 
-core:
-core.mkPackage {
-  function = { platforms, hex0, mescc-tools-boot, m2libc, src, mkMinimalPackage, buildPlatform, hostPlatform, targetPlatform, ... }: let
-    inherit (mescc-tools-boot.onHost)
+lib:
+{
+  function = { hex0, mescc-tools-boot, m2libc, src, mkMinimalPackage, buildPlatform, runPlatform, targetPlatform, ... }: let
+    inherit (mescc-tools-boot.onRun)
       hex1
       hex2-0
       catm
@@ -65,35 +65,35 @@ core.mkPackage {
       ;
 
     out = placeholder "out";
-    stage0Arch = platforms.stage0Arch hostPlatform;
-    m2libcArch = platforms.m2libcArch hostPlatform;
+    stage0Arch = lib.self.platforms.stage0Arch runPlatform;
+    m2libcArch = lib.self.platforms.m2libcArch runPlatform;
 
     endianFlag = {
       "aarch64-linux" = "--little-endian";
       "i686-linux" = "--little-endian";
       "x86_64-linux" = "--little-endian";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     bloodFlags = {
       "aarch64-linux" = ["--64"];
       "i686-linux" = [];
       "x86_64-linux" = ["--64"];
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
-    run = name: builder: args: mkMinimalPackage.onHost {
+    run = name: builder: args: mkMinimalPackage.onRun {
       inherit name;
       version = "1.8.0";
       drv = {
         inherit builder args;
       };
       public = {
-        targetPlatform = hostPlatform;
+        targetPlatform = runPlatform;
       };
     };
 
-  in if buildPlatform == hostPlatform then {
+  in if buildPlatform == runPlatform then {
 
-    inherit buildPlatform hostPlatform;
+    inherit buildPlatform runPlatform;
 
     ## Stages copied from nixpkgs
 
@@ -394,9 +394,9 @@ core.mkPackage {
 
   } else null;
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib.self) platforms;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self) mkMinimalPackage hex0 mescc-tools-boot;
+
     src = pkgs.self.minimal-bootstrap-sources;
     m2libc = pkgs.self.minimal-bootstrap-sources.m2libc;
   };

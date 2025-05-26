@@ -1,12 +1,8 @@
-core:
+lib:
 {
-  function = { mkMinimalPackage, hostPlatform, buildPlatform, targetPlatform, ... }:
-    attrs: mkMinimalPackage {
-      inherit hostPlatform buildPlatform targetPlatform;
+  function = { buildPlatform, runPlatform, targetPlatform, ... }:
+    attrs: lib.self.derivations.mkMinimalPackage {
+      inherit buildPlatform runPlatform targetPlatform;
       onlyOnNative = attrs.onlyOnNative or false;
     } attrs;
-
-  dep-defaults = { lib, ... }: {
-    inherit (lib.self.derivations) mkMinimalPackage;
-  };
 }

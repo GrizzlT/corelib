@@ -3,15 +3,15 @@
 lib:
 let
 
-  inherit (lib.self.trivial)
+  inherit (lib.trivial)
     isFunction
     ;
 
-  inherit (lib.self.lists)
+  inherit (lib.lists)
     foldr
     ;
 
-  inherit (lib.self.fixed-points)
+  inherit (lib.fixed-points)
     composeExtensions
     ;
 

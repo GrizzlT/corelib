@@ -3,8 +3,8 @@
 lib:
 let
 
-  inherit (lib.self.trivial) warnIf;
-  inherit (lib.self.attrsets) getOutput;
+  inherit (lib.trivial) warnIf;
+  inherit (lib.attrsets) getOutput;
 
   inherit (builtins)
     elem
@@ -23,7 +23,7 @@ let
 
   asciiTable = import ./ascii-table.nix;
 
-  inherit (lib.self.strings)
+  inherit (lib.strings)
     addContextFrom
     charToInt
     commonPrefixLength

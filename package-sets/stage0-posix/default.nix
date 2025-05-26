@@ -17,8 +17,6 @@ let
       writeTextFile = import ./write-text-file.nix;
       kaem = import ./kaem;
       runCommand = import ./run-command2.nix;
-
-      ## GCC bootstrap
     };
 
     lib = self': {

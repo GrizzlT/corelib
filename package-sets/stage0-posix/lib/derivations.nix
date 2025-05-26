@@ -6,8 +6,8 @@ let
 
 in {
 
-  mkMinimalPackage = { buildPlatform, hostPlatform, targetPlatform, onlyOnNative }: attrs: let
-    bootstrapPhase = buildPlatform == hostPlatform && hostPlatform == targetPlatform;
+  mkMinimalPackage = { buildPlatform, runPlatform, targetPlatform, onlyOnNative }: attrs: let
+    bootstrapPhase = buildPlatform == runPlatform && runPlatform == targetPlatform;
   in if (!onlyOnNative || bootstrapPhase) then encapsulateLayers [
     (layers.package {
       inherit (attrs) name version;
@@ -20,7 +20,7 @@ in {
 
     (self: super: {
       public = super.public
-        // { inherit buildPlatform hostPlatform; }
+        // { inherit buildPlatform runPlatform; }
         // (if isFunction (attrs.public or {}) then (attrs.public or {}) super.public else (attrs.public or {}));
     })
   ]

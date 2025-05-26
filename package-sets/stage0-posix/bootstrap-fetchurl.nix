@@ -1,4 +1,3 @@
-core:
 {
   # Adapted from https://github.com/NixOS/nix
   #
@@ -44,8 +43,6 @@ core:
         urls = [ url ];
       } // ({ inherit outputHashAlgo outputHash; }));
 
-    noSplice = true;
+    __elaborate = false;
   };
-
-  dep-defaults = { ... }: {};
 }

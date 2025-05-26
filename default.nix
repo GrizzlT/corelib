@@ -7,7 +7,7 @@ let
 
   bootstrapFn = bootstrap {
     builder = "x86_64-linux";
-    runtime = "x86_64-linux";
+    runtime = "riscv64-linux";
   };
 
   pkgs = {

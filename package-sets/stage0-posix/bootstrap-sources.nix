@@ -1,10 +1,9 @@
-core:
-core.mkPackage {
+{
 
-  function = { std, mkMinimalPackage, ... }: let
+  function = { mkMinimalPackage, ... }: let
     version = "1.8.0";
     outputHashAlgo = "sha256";
-    final = mkMinimalPackage.onHost {
+    final = mkMinimalPackage.onRun {
       name = "stage0-posix-source";
       inherit version;
 
@@ -42,13 +41,12 @@ core.mkPackage {
       public = {
         rev = "Release_${version}";
         m2libc = final + "/M2libc";
-        noSplice = true;
+        __elaborate = false;
       };
     };
   in final;
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib) std;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self) mkMinimalPackage;
   };
 }

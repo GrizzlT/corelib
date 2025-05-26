@@ -11,17 +11,17 @@ let
     length
     ;
 
-  inherit (lib.self.trivial)
+  inherit (lib.trivial)
     mergeAttrs
     ;
 
-  inherit (lib.self.strings)
+  inherit (lib.strings)
     concatMapStringsSep
     concatStringsSep
     escapeNixIdentifier
     ;
 
-  inherit (lib.self.lists)
+  inherit (lib.lists)
     all
     concatMap
     elemAt
@@ -34,7 +34,7 @@ let
     take
     ;
 
-  inherit (lib.self.attrsets)
+  inherit (lib.attrsets)
     attrByPath
     attrNames
     attrValues

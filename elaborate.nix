@@ -39,7 +39,7 @@ let
    */
   elaboratePkgs = pkgSet: bootstrapFn:
     let
-      elaboratedDeps = builtins.mapAttrs (_: value: elaboratePkgs value bootstrapFn) pkgSet.dependencies;
+      elaboratedDeps = builtins.mapAttrs (_: value: elaboratePkgs value bootstrapFn) pkgSet.dependencies or {};
 
       buildFromTriple = triples: pkgName: run: target: let
         elaborateRecursive = pkgs: name: let
@@ -81,7 +81,7 @@ let
       let
         pkgsDep = builtins.mapAttrs (name: value: let
           inherit ((bootstrapFn elaboratedDeps.${name}).${perspective}) adjacent;
-        in splicePkgs adjacent (builtins.attrNames value.packages or {})) pkgSet.dependencies;
+        in splicePkgs adjacent (builtins.attrNames value.packages or {})) pkgSet.dependencies or {};
 
         pkgsSelf = pkgsDep // { self = splicePkgs triples (builtins.attrNames (pkgSet.packages or {})); };
 

@@ -2,7 +2,7 @@
 
 lib: let
 
-  inherit (lib.self.trivial)
+  inherit (lib.trivial)
     functionArgs
     isFunction
     isInt
@@ -11,7 +11,7 @@ lib: let
     warn
     ;
 
-  inherit (lib.self.strings)
+  inherit (lib.strings)
     isString
     ;
 

@@ -1,30 +1,30 @@
 lib:
 let
 
-  inherit (lib.self.trivial)
+  inherit (lib.trivial)
     isFunction
     ;
-  inherit (lib.self.strings)
+  inherit (lib.strings)
     sanitizeDerivationName
     ;
 
-  inherit (lib.self.fixed-points)
+  inherit (lib.fixed-points)
     composeExtensions
     extends
     fix
     ;
 
-  inherit (lib.self.lists)
+  inherit (lib.lists)
     foldl'
     head
     ;
 
-  inherit (lib.self.attrsets)
+  inherit (lib.attrsets)
     genAttrs
     optionalAttrs
     ;
 
-  inherit (lib.self.derivations)
+  inherit (lib.derivations)
     mkEncapsulate
     ;
 

@@ -29,16 +29,15 @@
 # Warning all binaries prior to the use of blood-elf will not be readable by
 # Objdump, you may need to use ndism or gdb to view the assembly in the binary.
 
-core:
-core.mkPackage {
+lib:
+{
   function = {
-    platforms,
     mescc-tools-boot,
     mescc-tools-boot2,
     m2libc,
     src,
     mkMinimalPackage,
-    buildPlatform, hostPlatform, targetPlatform,
+    buildPlatform, runPlatform, targetPlatform,
     ...
   }: let
     inherit (mescc-tools-boot.onBuild)
@@ -50,7 +49,7 @@ core.mkPackage {
       M1
       hex2
       ;
-    inherit (mescc-tools-boot2.onHost)
+    inherit (mescc-tools-boot2.onRun)
       M1-macro-1_M1
       M1-macro-1-footer_M1
       M1-macro-1_hex2
@@ -64,8 +63,8 @@ core.mkPackage {
 
     out = placeholder "out";
 
-    baseAddress = platforms.baseAddress hostPlatform;
-    m2libcArch = platforms.m2libcArch hostPlatform;
+    baseAddress = lib.self.platforms.baseAddress runPlatform;
+    m2libcArch = lib.self.platforms.m2libcArch runPlatform;
 
     endianFlag = {
       "aarch64-linux" = "--little-endian";
@@ -73,7 +72,7 @@ core.mkPackage {
       "x86_64-linux" = "--little-endian";
       "riscv64-linux" = "--little-endian";
       "riscv32-linux" = "--little-endian";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     bloodFlags = {
       "aarch64-linux" = ["--64"];
@@ -81,21 +80,21 @@ core.mkPackage {
       "x86_64-linux" = ["--64"];
       "riscv64-linux" = ["--64"];
       "riscv32-linux" = [];
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
-    run = name: builder: args: mkMinimalPackage.onHost {
+    run = name: builder: args: mkMinimalPackage.onRun {
       inherit name;
       version = "1.8.0";
       drv = {
         inherit builder args;
       };
       public = {
-        targetPlatform = hostPlatform;
+        targetPlatform = runPlatform;
       };
     };
   in {
 
-    inherit buildPlatform hostPlatform;
+    inherit buildPlatform runPlatform;
 
     ## Stages copied from oriansj's stage0-posix
 
@@ -325,7 +324,7 @@ core.mkPackage {
       out
     ];
 
-  } // (if buildPlatform == hostPlatform then let
+  } // (if buildPlatform == runPlatform then let
     inherit (mescc-tools-boot.onBuild) hex2-1;
   in {
 
@@ -391,9 +390,9 @@ core.mkPackage {
 
   });
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib.self) platforms;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools-boot2;
+
     src = pkgs.self.minimal-bootstrap-sources;
     m2libc = pkgs.self.minimal-bootstrap-sources.m2libc;
   };

@@ -3,20 +3,20 @@
 lib:
 let
 
-  inherit (lib.self.strings) toInt;
+  inherit (lib.strings) toInt;
 
-  inherit (lib.self.trivial)
+  inherit (lib.trivial)
     compare
     id
     max
     min
     ;
 
-  inherit (lib.self.attrsets)
+  inherit (lib.attrsets)
     mapAttrs
     ;
 
-  inherit (lib.self.lists)
+  inherit (lib.lists)
     any
     compareLists
     concatMap

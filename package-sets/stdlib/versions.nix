@@ -4,7 +4,7 @@
 lib:
 let
 
-  inherit (lib.self.versions)
+  inherit (lib.versions)
     splitVersion
     ;
 

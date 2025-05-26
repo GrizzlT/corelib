@@ -165,7 +165,7 @@
         adjacent = {
           pkgsBuildBuild = self.pkgsBuildBuild;
           pkgsBuildRun = self.pkgsBuildBuild;
-          pkgsBuildTarget = self.BuildTarget;
+          pkgsBuildTarget = self.pkgsBuildTarget;
           pkgsRunRun = self.pkgsBuildBuild;
           pkgsRunTarget = self.pkgsBuildTarget;
           pkgsTargetTarget = self.pkgsTargetTarget;

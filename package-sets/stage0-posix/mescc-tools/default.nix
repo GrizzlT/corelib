@@ -1,9 +1,8 @@
 # Ported from Nixpkgs by GrizzlT
 
-core:
-core.mkPackage {
+lib:
+{
   function = {
-    platforms,
     mescc-tools-boot,
     mescc-tools-boot2,
     mescc-tools,
@@ -11,7 +10,7 @@ core.mkPackage {
     src,
     mkMinimalPackage,
     buildPlatform,
-    hostPlatform,
+    runPlatform,
     targetPlatform,
     ...
   }: let
@@ -27,8 +26,8 @@ core.mkPackage {
       hex2
       ;
 
-    baseAddress = platforms.baseAddress hostPlatform;
-    m2libcArch = platforms.m2libcArch hostPlatform;
+    baseAddress = lib.self.platforms.baseAddress runPlatform;
+    m2libcArch = lib.self.platforms.m2libcArch runPlatform;
 
     endianFlag = {
       "aarch64-linux" = "--little-endian";
@@ -36,7 +35,7 @@ core.mkPackage {
       "x86_64-linux" = "--little-endian";
       "riscv64-linux" = "--little-endian";
       "riscv32-linux" = "--little-endian";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     bloodFlag = {
       "aarch64-linux" = "--64";
@@ -44,12 +43,12 @@ core.mkPackage {
       "x86_64-linux" = "--64";
       "riscv64-linux" = "--64";
       "riscv32-linux" = " ";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     # We need a few tools from mescc-tools-extra to assemble the output folder
     buildMesccToolsExtraUtil =
       name:
-      mkMinimalPackage.onHost {
+      mkMinimalPackage.onRun {
         name = "mescc-tools-extra-${name}";
         version = "1.8.0";
         drv = {
@@ -110,7 +109,7 @@ core.mkPackage {
     chmod = buildMesccToolsExtraUtil "chmod";
     replace = buildMesccToolsExtraUtil "replace";
 
-  in mkMinimalPackage.onHost {
+  in mkMinimalPackage.onRun {
     name = "mescc-tools";
     version = "1.8.0";
     drv = {
@@ -121,8 +120,8 @@ core.mkPackage {
         "--file"
         ./build.kaem
       ];
-      M1_host = mescc-tools-boot2.onHost.M1;
-      hex2_host = mescc-tools-boot2.onHost.hex2;
+      M1_host = mescc-tools-boot2.onRun.M1;
+      hex2_host = mescc-tools-boot2.onRun.hex2;
       inherit
         M2
         M1
@@ -137,7 +136,7 @@ core.mkPackage {
         bloodFlag
         endianFlag
         ;
-    } // (if buildPlatform == hostPlatform then {
+    } // (if buildPlatform == runPlatform then {
       inherit mkdir cp chmod replace;
       blood-elf = "${placeholder "out"}/bin/blood-elf";
     } else {
@@ -149,9 +148,9 @@ core.mkPackage {
     };
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib.self) platforms;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self) mkMinimalPackage mescc-tools-boot mescc-tools-boot2 mescc-tools;
+
     src = pkgs.self.minimal-bootstrap-sources;
     m2libc = pkgs.self.minimal-bootstrap-sources.m2libc;
   };

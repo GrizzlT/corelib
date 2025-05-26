@@ -3,7 +3,7 @@
 lib:
 let
 
-  inherit (lib.self.asserts)
+  inherit (lib.asserts)
     assertMsg
     ;
 in {

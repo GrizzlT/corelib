@@ -1,19 +1,18 @@
 # Ported from Nixpkgs by GrizzlT
 
-core:
-core.mkPackage {
+lib:
+{
   function = {
-    std,
     mescc-tools-extra,
     mescc-tools-boot2,
     mkMinimalPackage,
     ...
   }: let
 
-    inherit (std.strings) makeBinPath;
-    inherit (mescc-tools-boot2.onHost) kaem-unwrapped;
+    inherit (lib.std.strings) makeBinPath;
+    inherit (mescc-tools-boot2.onRun) kaem-unwrapped;
 
-  in mkMinimalPackage.onHost {
+  in mkMinimalPackage.onRun {
     name = "kaem";
     version = "1.6.0";
     drv = {
@@ -35,8 +34,7 @@ core.mkPackage {
     };
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib) std;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self)
       mescc-tools-boot2
       mescc-tools-extra

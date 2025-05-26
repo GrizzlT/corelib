@@ -1,7 +1,12 @@
-core:
-core.mkPackage {
-  function = { std, kaem, mescc-tools-extra, mkMinimalPackage, ... }: let
-    inherit (std.strings) optionalString makeBinPath;
+lib:
+{
+  function = {
+    kaem,
+    mescc-tools-extra,
+    mkMinimalPackage,
+    ...
+  }: let
+    inherit (lib.std.strings) optionalString makeBinPath;
   in {
     __functor = _: {
         name, # the name of the derivation
@@ -42,14 +47,13 @@ core.mkPackage {
         };
         public = {
           inherit text;
-          noSplice = true; # NOTE: is this necessary?
+          __elaborate = true; # NOTE: is this necessary?
         };
       };
-    noSplice = true;
+    __elaborate = false;
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib) std;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self) mkMinimalPackage mescc-tools-extra kaem;
   };
 }

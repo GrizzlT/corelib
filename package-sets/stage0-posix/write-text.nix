@@ -1,11 +1,11 @@
-core:
-core.mkPackage {
+lib:
+{
   function = { writeTextFile, ... }: {
     __functor = self: name: text: writeTextFile { inherit name text; };
-    noSplice = true;
+    __elaborate = false;
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
+  inputs = { pkgs, ... }: {
     inherit (pkgs.self) writeTextFile;
   };
 }
