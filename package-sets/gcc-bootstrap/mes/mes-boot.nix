@@ -1,13 +1,11 @@
-core:
+lib:
 {
   function = {
-    std,
-    platforms,
     fetchurl,
     runCommand,
     m2libc,
     buildPlatform,
-    hostPlatform,
+    runPlatform,
     ...
   }: let
 
@@ -19,21 +17,21 @@ core:
       "x86_64-linux" = "x86_64";
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     stage0_cpu = {
       "i686-linux" = "x86";
       "x86_64-linux" = "amd64";
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     mes_cpu = {
       "i686-linux" = "x86";
       "x86_64-linux" = "x86_64";
       "riscv64-linux" = "riscv64";
       "riscv32-linux" = "riscv32";
-    }.${hostPlatform} or (throw "Unsupported system: ${hostPlatform}");
+    }.${runPlatform} or (throw "Unsupported system: ${runPlatform}");
 
     #############
     #### Define sources
@@ -49,7 +47,7 @@ core:
       #define MES_VERSION "${version}"
     '';
 
-    srcPost = runCommand.onHost {
+    srcPost = runCommand.onRun {
       inherit version;
       name = "${name}-src";
       env = {
@@ -89,12 +87,10 @@ core:
 
   in {
     inherit src srcPost srcPrefix;
-    inherit buildPlatform hostPlatform;
+    inherit buildPlatform runPlatform;
   };
 
-  dep-defaults = { pkgs, lib, ... }: {
-    inherit (lib) std;
-    inherit (lib.stage0) platforms;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.stage0.minimal-bootstrap-sources) m2libc;
     inherit (pkgs.stage0)
       runCommand

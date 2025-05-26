@@ -1,5 +1,5 @@
-core:
-core.mkPackage {
+lib:
+{
   function = {
     fetchurl,
     runCommand,
@@ -16,7 +16,7 @@ core.mkPackage {
       sha256 = "sha256-825Pt91STcP0s1TT1TE/aefOWmrpNxHoz21R6qjSsxg=";
     };
 
-    nyacc = runCommand.onHost {
+    nyacc = runCommand.onRun {
       inherit name version;
       public.guilePath = "${nyacc}/share/${name}-${version}/module";
       env.buildCommand = ''
@@ -28,8 +28,7 @@ core.mkPackage {
     };
   in nyacc;
 
-  dep-defaults = { lib, pkgs, ... }: {
-    inherit (lib) std;
+  inputs = { pkgs, ... }: {
     inherit (pkgs.stage0) fetchurl runCommand;
   };
 }

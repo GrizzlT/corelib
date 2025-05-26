@@ -1,8 +1,6 @@
 let
-  mkPackageSet = import ../../mk-package-set.nix;
-
-  bootstrap = mkPackageSet {
-    packages = self: {
+  bootstrap = {
+    packages = {
       nyacc = import ./mes/nyacc.nix;
       mes-boot = import ./mes/mes-boot.nix;
       mes = import ./mes/mes.nix;
@@ -27,10 +25,14 @@ let
       # tinycc-musl-pre = import ./tinycc/musl.nix;
       # tinycc-musl = import ./tinycc/cached-musl.nix;
     };
-    lib = import ./lib;
+
+    lib = self': {
+      self = import ./lib self';
+      std = import ../stdlib self'.std;
+    };
+
     dependencies = {
       stage0 = import ../stage0-posix;
-      std = import ../stdlib;
     };
   };
 in

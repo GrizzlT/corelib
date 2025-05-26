@@ -1,38 +1,36 @@
-core:
-core.mkPackage {
+lib:
+{
   function = {
-    std,
-    platforms,
-    mes-arch,
     fetchurl,
     mes,
     runCommand,
-    autoCall,
+
+    deferCall,
     buildPlatform,
-    hostPlatform,
+    runPlatform,
     ...
   }: let
-    inherit (std.strings) replaceStrings concatMapStringsSep;
-    inherit (mes.onHost) srcPrefix; # onHost to get correct include flags for libc
+    inherit (lib.std.strings) replaceStrings concatMapStringsSep;
+    inherit (mes.onRun) srcPrefix; # onRun to get correct include flags for libc
 
     #####################
     #### Define cpu flags
-    mes_cpu = mes-arch.mes_cpu hostPlatform;
+    mes_cpu = lib.self.mes-arch.mes_cpu runPlatform;
 
     #############
     #### Define sources
     version = "0.27";
-    mes-bootstrap = autoCall (import ./mes-boot.nix) {};
-    nyacc = autoCall (import ./nyacc.nix) {};
+    mes-bootstrap = deferCall (import ./mes-boot.nix) {};
+    nyacc = deferCall (import ./nyacc.nix) {};
     sources = (import ./sources.nix) { inherit mes_cpu; };
 
     stripExt = source: replaceStrings [ ".c" ] [ "" ] (builtins.baseNameOf source);
 
-    mesBin = if buildPlatform == hostPlatform then
+    mesBin = if buildPlatform == runPlatform then
       mes-bootstrap.srcPost.bin
     else mes.onBuild;
 
-    compile = source: runCommand.onHost {
+    compile = source: runCommand.onRun {
       name = stripExt source;
       env = {
         MES_ARENA = 20000000;
@@ -69,7 +67,7 @@ core.mkPackage {
 
     mkLib = libname: sources: let
       os = map compile sources;
-    in runCommand.onHost {
+    in runCommand.onRun {
       name = "mes-${libname}";
       inherit version;
       env.buildCommand = /* bash */ ''
@@ -87,7 +85,7 @@ core.mkPackage {
     libc = mkLib "libc" sources.libc;
     libc_tcc = mkLib "libc+tcc" sources.libc_tcc;
 
-    libs = runCommand.onHost {
+    libs = runCommand.onRun {
       name = "mes-m2-libs";
       inherit version;
       env.buildCommand = /* bash */ ''
@@ -116,7 +114,7 @@ core.mkPackage {
       '';
     };
 
-  in runCommand.onHost {
+  in runCommand.onRun {
     name = "mes";
     inherit version;
 
@@ -155,11 +153,8 @@ core.mkPackage {
     };
   };
 
-  dep-defaults = { pkgs, lib, autoCall, ... }: {
-    inherit autoCall;
-    inherit (lib) std;
-    inherit (lib.self) mes-arch;
-    inherit (lib.stage0) platforms;
+  inputs = { pkgs, deferCall, ... }: {
+    inherit deferCall;
     inherit (pkgs.stage0)
       kaem
       runCommand
