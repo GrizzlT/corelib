@@ -1,8 +1,6 @@
 let
-  mkPackageSet = import ../../mk-package-set.nix;
-
-  stage0 = mkPackageSet {
-    packages = self: {
+  stage0 = {
+    packages = {
       fetchurl = import ./bootstrap-fetchurl.nix;
       mkMinimalPackage = import ./mk-minimal-package.nix;
 
@@ -22,9 +20,10 @@ let
 
       ## GCC bootstrap
     };
-    lib = import ./lib;
-    dependencies = {
-      std = import ../stdlib;
+
+    lib = self': {
+      self = import ./lib self';
+      std = import ../stdlib/default.nix self'.std;
     };
   };
 in

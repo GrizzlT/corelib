@@ -1,7 +1,16 @@
 let
-  consume = import ./consume-prototype.nix;
-  mkPackageSet = import ./mk-package-set.nix;
+  inherit (import ./elaborate.nix) generateBootstrapFunction elaboratePkgs;
+
+  bootstrap =
+    { builder, runtime, gcc-target ? runtime }:
+    pkgSet: let
+      elaborated = elaboratePkgs pkgSet (generateBootstrapFunction {
+        buildPlatform = builder;
+        runPlatform = runtime;
+        targetPlatform = gcc-target;
+      });
+    in elaborated.pkgsRunTarget;
+
 in {
-  inherit mkPackageSet;
-  inherit (consume) depMapping resolveLibs resolvePkgs bootstrap;
+  inherit bootstrap;
 }
