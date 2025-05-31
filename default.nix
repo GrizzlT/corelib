@@ -3,16 +3,19 @@ let
 
   # example package set
   stage0 = import ./package-sets/stage0-posix;
-  bootstrap-pkgs = import ./package-sets/gcc-bootstrap;
+  # bootstrap-pkgs = import ./package-sets/gcc-bootstrap;
+  gcc-bootstrap = import ./package-sets/gcc;
 
   bootstrapFn = bootstrap {
     builder = "x86_64-linux";
-    runtime = "riscv64-linux";
+    runtime = "x86_64-linux";
   };
 
   pkgs = {
     stage0 = bootstrapFn stage0;
-    bootstrap = bootstrapFn bootstrap-pkgs;
+    bootstrap = bootstrapFn gcc-bootstrap;
   };
 
-in pkgs
+in {
+  inherit pkgs;
+}
