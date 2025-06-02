@@ -6,6 +6,7 @@
     bootstrapTools = import ./bootstrap-tools;
     runCommand = import ./run-command.nix;
 
+    python = import ./python.nix;
     glibc-boot = import ./glibc-boot.nix;
   };
 
