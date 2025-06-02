@@ -12,7 +12,7 @@ lib:
     src = bootstrapFiles.onRun;
 
     linker = {
-      "x86_64-linux" = "${src}/lib/ld-linux-x86-64.so.2";
+      "x86_64-linux" = "${src}/glibc/lib/ld-linux-x86-64.so.2";
     }.${runPlatform} or (throw "Unsupported platform: ${runPlatform}");
   in
     if buildPlatform != runPlatform then null
@@ -20,14 +20,14 @@ lib:
       name = "bootstrap-bash";
       version = null;
       env = {
-        LD_LIBRARY_PATH = makeLibraryPath [ src ];
+        LD_LIBRARY_PATH = "${src}/glibc/lib";
         LD_BINARY = linker;
 
         buildCommand = /* sh */ ''
           mkdir -p ''${out}/bin
-          cp ''${src}/bin/bash ''${out}/bin/bash
+          cp ''${src}/bash/bin/bash ''${out}/bin/bash
 
-          ''${LD_BINARY} ''${src}/bin/patchelf --set-interpreter ${linker} --set-rpath ''${src}/lib --force-rpath ''${out}/bin/bash
+          ''${LD_BINARY} ''${src}/patchelf/bin/patchelf --set-interpreter ${linker} --set-rpath ''${src}/glibc/lib --force-rpath ''${out}/bin/bash
           chmod 555 ''${out}/bin/bash
         '';
         inherit src;

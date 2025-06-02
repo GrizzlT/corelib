@@ -3,8 +3,10 @@
     bootstrapFiles = import ./bootstrap-files;
 
     boot-bash = import ./bootstrap-tools/bash.nix;
-
     bootstrapTools = import ./bootstrap-tools;
+    runCommand = import ./run-command.nix;
+
+    glibc-boot = import ./glibc-boot.nix;
   };
 
   lib = self': {
