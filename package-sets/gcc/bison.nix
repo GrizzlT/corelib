@@ -2,8 +2,10 @@
   function = {
     runCommand,
     fetchurl,
+    m4,
     binutils,
     coreutils,
+    diffutils,
     gcc,
     gawk,
     gnugrep,
@@ -15,12 +17,12 @@
     runPlatform,
     ...
   }: let
-    name = "python";
-    version = "3.11.12";
+    name = "bison";
+    version = "3.8.2";
 
     src = fetchurl {
-      url = "https://github.com/python/cpython/archive/refs/tags/v${version}.tar.gz";
-      hash = "sha256-tgbaLoO+LuiKE9F5dMHPReCJerwoBXd0MetbYTwMmEo=";
+      url = "https://ftpmirror.gnu.org/bison/bison-${version}.tar.gz";
+      hash = "sha256-BsnhO99+sk1M62tZIFpPZ8LH5yExGWREMP6C+9FKCrs=";
     };
 
   in runCommand.onRun {
@@ -28,14 +30,11 @@
     env = {
       buildCommand = /* bash */ ''
         gzip -d ${src} -c | tar x
-        cd cpython-${version}
+        cd bison-${version}
 
-        # ./configure --help
         ./configure --prefix=$out \
           --build=${buildPlatform} \
           --host=${runPlatform} \
-          --without-tests \
-          --without-ensurepip \
           CC=${gcc}/bin/gcc-wrapper
 
         make -j 4
@@ -43,23 +42,24 @@
       '';
       tools = [
         binutils
+        diffutils
+        m4.onBuild
         coreutils
         gawk
         gnugrep
         gnumake
-        gnutar
         gnused
+        gnutar
         gzip
       ];
     };
   };
 
   inputs = { pkgs, ... }: {
-    inherit (pkgs.stage0) fetchurl;
-    inherit (pkgs.self) runCommand;
-    inherit (pkgs.self.bootstrapTools.onBuild) # TODO: add nested elaboration to make this more streamlined
+    inherit (pkgs.self.bootstrapTools.onBuild) # TODO: add nested elaboration to make this more streamlined for bootstrap
       binutils
       coreutils
+      diffutils
       gcc
       gawk
       gnugrep
@@ -68,5 +68,8 @@
       gnused
       gzip
       ;
+    inherit (pkgs.self) runCommand m4;
+    inherit (pkgs.stage0) fetchurl;
   };
 }
+

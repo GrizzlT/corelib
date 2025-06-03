@@ -9,9 +9,10 @@
     ...
   }: let
     src = bootstrapFiles.onRun;
-    linker = {
-      "x86_64-linux" = "${src}/glibc/lib/ld-linux-x86-64.so.2";
+    linkerPrefix = {
+      "x86_64-linux" = "ld-linux-x86-64.so.2";
     }.${runPlatform} or (throw "Unsupported platform: ${runPlatform}");
+    linker = "${src}/glibc/lib/${linkerPrefix}";
 
     glibc = runCommand.onRun {
       name = "boot-glibc";
@@ -164,6 +165,19 @@
         '';
       };
     };
+    bash = runCommand.onRun {
+      name = "boot-bash";
+      env = {
+        tools = [ patchelf coreutils ];
+        buildCommand = /* bash */ ''
+          mkdir -p $out
+          cp -r ${src}/bash/bin $out
+          chmod -R u+w $out
+          patchelf --set-interpreter ${linker} --set-rpath ${glibc}/lib --force-rpath $out/bin/bash
+          ln -s bash $out/bin/sh
+        '';
+      };
+    };
     gnugrep = runCommand.onRun {
       name = "boot-gnugrep";
       env = {
@@ -305,6 +319,27 @@
           done
           patchelf --set-rpath ${glibc}/lib --force-rpath $out/lib/libgcc_s.so.1
           patchelf --set-rpath ${glibc}/lib:$out/lib --force-rpath $out/lib/libstdc++*.so* || true
+          cat <<EOF >$out/bin/gcc-wrapper
+          #!${boot-bash.onRun}/bin/bash
+          set -eu -o pipefail +o posix
+
+          if (( "\''${NIX_DEBUG:-0}" >= 7 )); then
+              set -x
+          fi
+
+          NIX_RUNTIME_DEPS="\''${NIX_RUNTIME_DEPS:-${glibc}/lib}"
+          NIX_CFLAGS_EXTRA="\''${NIX_CFLAGS_EXTRA:-}"
+
+          $out/bin/gcc \\
+            "\$@" \\
+            -B${glibc}/lib \\
+            -idirafter ${glibc}/include \\
+            -Wl,--dynamic-linker,${glibc}/lib/${linkerPrefix} \\
+            -Wl,-rpath,"\''${NIX_RUNTIME_DEPS}" \\
+            -B$out/lib \\
+            -B${binutils}/bin
+          EOF
+          chmod +x $out/bin/gcc-wrapper
         '';
       };
     };
@@ -328,6 +363,7 @@
         gnutar
         gzip
         gcc
+        bash
         ;
       inherit
         glibc

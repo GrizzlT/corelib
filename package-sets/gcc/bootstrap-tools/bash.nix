@@ -8,7 +8,6 @@ lib:
     runPlatform,
     ...
   }: let
-    inherit (lib.std.strings) makeLibraryPath;
     src = bootstrapFiles.onRun;
 
     linker = {

@@ -2,12 +2,20 @@
   function = {
     runCommand,
     fetchurl,
-    coreutils,
-    gnumake,
+    bash,
+    bzip2,
     binutils,
+    coreutils,
+    diffutils,
+    gcc,
     gawk,
+    gnugrep,
+    gnumake,
+    gnutar,
     gnused,
-    # python
+    gzip,
+    python,
+    bison,
     buildPlatform,
     runPlatform,
     ...
@@ -23,37 +31,55 @@
     inherit name version;
     env = {
       buildCommand = /* bash */ ''
-        ${coreutils.onBuild}/bin/bunzip2 ${src} -c | ${coreutils.onBuild}/bin/tar x
+        bzip2 -d ${src} -c | tar x
         cd glibc-${version}
-        ${coreutils.onBuild}/bin/mkdir build
+        mkdir build
         cd build
 
         ../configure --prefix=$out \
           --build=${buildPlatform} \
           --host=${runPlatform} \
-          --with-binutils=${binutils.onBuild}/bin \
-          CC=${binutils.onBuild}/bin/gcc \
-          LDFLAGS=-L${coreutils.onBuild}/lib \
-          CLFAGS=-nostdlib
+          CC=${gcc}/bin/gcc-wrapper
+
+        make -j 4
+        make install
       '';
       tools = [
-        # coreutils.onBuild
-        # gnumake.onBuild
-        # binutils.onBuild
-        # gawk.onBuild
-        # gnused.onBuild
+        bash
+        bzip2
+        binutils
+        diffutils
+        coreutils
+        gawk
+        gnugrep
+        gnumake
+        gnused
+        gnutar
+        gzip
+
+        python.onBuild
+        bison.onBuild
       ];
     };
   };
 
   inputs = { pkgs, ... }: {
-    inherit (pkgs.self) runCommand;
+    inherit (pkgs.self) runCommand python bison;
     inherit (pkgs.stage0) fetchurl;
 
-    coreutils = pkgs.self.bootstrapTools;
-    gnumake = pkgs.self.bootstrapTools;
-    binutils = pkgs.self.bootstrapTools;
-    gawk = pkgs.self.bootstrapTools;
-    gnused = pkgs.self.bootstrapTools;
+    inherit (pkgs.self.bootstrapTools.onBuild) # TODO: add nested elaboration to make this more streamlined for bootstrap
+      bash
+      bzip2
+      binutils
+      coreutils
+      diffutils
+      gcc
+      gawk
+      gnugrep
+      gnumake
+      gnutar
+      gnused
+      gzip
+      ;
   };
 }

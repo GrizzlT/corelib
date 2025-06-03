@@ -7,6 +7,8 @@
     runCommand = import ./run-command.nix;
 
     python = import ./python.nix;
+    m4 = import ./m4.nix;
+    bison = import ./bison.nix;
     glibc-boot = import ./glibc-boot.nix;
   };
 
