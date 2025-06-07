@@ -58,7 +58,7 @@ lib:
   inputs = { pkgs, ... }: {
     inherit (pkgs.stage0) fetchurl;
     inherit (pkgs.self) runCommand;
-    inherit (lib.self.pushDownPlatforms pkgs.self.bootstrapTools)
+    inherit (pkgs.self.bootstrapTools.__elaborate)
       binutils
       coreutils
       gcc

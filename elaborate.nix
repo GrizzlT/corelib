@@ -2,6 +2,25 @@ let
 
   inherit (import ./generate-elaborate.nix) generateBootstrapFunction;
 
+  pushDownPlatforms = attrs: let
+    packages = foldlAttrs
+      (acc: _: value: acc // (builtins.mapAttrs (_: _: 0) value))
+      {}
+      attrs;
+  in builtins.mapAttrs
+    (name: _: foldlAttrs
+      (acc: flavor: value: acc // (if value ? ${name} then { ${flavor} = value.${name}; } else {}))
+      {}
+      attrs
+    )
+    packages;
+
+  foldlAttrs = f: init: set:
+    builtins.foldl'
+      (acc: name: f acc name set.${name})
+      init
+      (builtins.attrNames set);
+
   isFunction = f: builtins.isFunction f ||
     (f ? __functor && isFunction (f.__functor f));
 
@@ -46,16 +65,14 @@ let
           pkg = pkgs.${pkgName} or null;
           elaborateRule = pkg.__elaborate or true;
 
-          # TODO: recursive elaboration ?
-          # TODO: Strip __elaborate ?
           elaborated = if pkg.targetPlatform or null == null then {
             ${"on" + run} = pkg;
           } else {
             ${"on" + run + "For" + target} = pkg;
           };
         in (if pkg == null then {} else (
-          if elaborateRule == true then elaborated else pkg
-        ));
+          if elaborateRule != false then elaborated else pkg
+        ) // { __elaborate = elaborateRule; });
       in elaborateRecursive triples.${"pkgs" + run + target} pkgName;
 
       splicePkgs = triples: pkgNames: let
@@ -67,7 +84,12 @@ let
             (splicer "Target" "Target") //
             (splicer "Run" "Run") //
             (splicer "Run" "Target");
-        in acc // { ${pkg} = splicedPkg; }) {} pkgNames;
+          slimmedPkg = builtins.removeAttrs splicedPkg [ "__elaborate" ];
+        in acc // { ${pkg} = slimmedPkg // (
+          if splicedPkg.__elaborate == "recursive" then
+            { __elaborate = pushDownPlatforms slimmedPkg; }
+          else {}
+        ); }) {} pkgNames;
       in spliced;
 
       /*

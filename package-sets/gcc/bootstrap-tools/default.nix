@@ -348,6 +348,7 @@
   in
     if buildPlatform != runPlatform then null
     else {
+      __elaborate = "recursive";
       inherit
         coreutils
         patchelf
