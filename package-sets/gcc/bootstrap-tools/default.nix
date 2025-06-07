@@ -2,7 +2,7 @@
 
   function = {
     bootstrapFiles,
-    boot-bash,
+    bash,
     runCommand,
     buildPlatform,
     runPlatform,
@@ -165,7 +165,7 @@
         '';
       };
     };
-    bash = runCommand.onRun {
+    bash' = runCommand.onRun {
       name = "boot-bash";
       env = {
         tools = [ patchelf coreutils ];
@@ -187,9 +187,9 @@
           cp -r ${src}/gnugrep/bin $out
           chmod -R u+w $out
           patchelf --set-interpreter ${linker} --set-rpath ${glibc}/lib:${pcre2}/lib --force-rpath $out/bin/grep
-          echo "#! ${boot-bash.onRun}/bin/bash" > $out/bin/egrep
+          echo "#! ${bash.onRun}/bin/bash" > $out/bin/egrep
           echo "exec $out/bin/grep -E \"\$@\"" >> $out/bin/egrep
-          echo "#! ${boot-bash.onRun}/bin/bash" > $out/bin/fgrep
+          echo "#! ${bash.onRun}/bin/bash" > $out/bin/fgrep
           echo "exec $out/bin/grep -F \"\$@\"" >> $out/bin/fgrep
           chmod +x $out/bin/egrep $out/bin/fgrep
         '';
@@ -320,7 +320,7 @@
           patchelf --set-rpath ${glibc}/lib --force-rpath $out/lib/libgcc_s.so.1
           patchelf --set-rpath ${glibc}/lib:$out/lib --force-rpath $out/lib/libstdc++*.so* || true
           cat <<EOF >$out/bin/gcc-wrapper
-          #!${boot-bash.onRun}/bin/bash
+          #!${bash.onRun}/bin/bash
           set -eu -o pipefail +o posix
 
           if (( "\''${NIX_DEBUG:-0}" >= 7 )); then
@@ -350,22 +350,22 @@
     else {
       __elaborate = "recursive";
       inherit
-        coreutils
-        patchelf
         binutils
         bzip2
+        coreutils
         diffutils
         findutils
         gawk
+        gcc
         gnugrep
         gnumake
         gnupatch
         gnused
         gnutar
         gzip
-        gcc
-        bash
+        patchelf
         ;
+      bash = bash';
       inherit
         glibc
         gmp
@@ -379,7 +379,7 @@
     };
 
   inputs = { pkgs, ... }: {
-    inherit (pkgs.self) bootstrapFiles boot-bash runCommand;
+    inherit (pkgs.self) bootstrapFiles bash runCommand;
   };
 
 }

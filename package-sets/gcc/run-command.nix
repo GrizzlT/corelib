@@ -1,7 +1,7 @@
 lib:
 {
   function = {
-    boot-bash,
+    bash,
     writeText,
     mkMinimalPackage,
     ...
@@ -10,7 +10,7 @@ lib:
   in {
     name,
     version ? null,
-    shell ? "${boot-bash.onBuild}/bin/bash",
+    shell ? "${bash.onBuild}/bin/bash",
     env,
     public ? {},
   }: mkMinimalPackage.onRun {
@@ -30,11 +30,11 @@ lib:
 
   inputs = { pkgs, ... }: {
     inherit (pkgs.self)
-      boot-bash
+      bash
+      writeText
       ;
     inherit (pkgs.stage0)
       mkMinimalPackage
-      writeText
       ;
   };
 }
