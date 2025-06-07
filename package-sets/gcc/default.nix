@@ -9,10 +9,12 @@
     python = import ./python.nix;
     m4 = import ./m4.nix;
     bison = import ./bison.nix;
+    binutils = import ./binutils.nix;
     glibc-boot = import ./glibc-boot.nix;
   };
 
   lib = self': {
+    self = import ./lib self';
     std = import ../stdlib/default.nix self'.std;
   };
 

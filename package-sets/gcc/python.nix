@@ -1,3 +1,4 @@
+lib:
 {
   function = {
     runCommand,
@@ -36,20 +37,20 @@
           --host=${runPlatform} \
           --without-tests \
           --without-ensurepip \
-          CC=${gcc}/bin/gcc-wrapper
+          CC=${gcc.onBuild}/bin/gcc-wrapper
 
         make -j 4
         make install
       '';
       tools = [
-        binutils
-        coreutils
-        gawk
-        gnugrep
-        gnumake
-        gnutar
-        gnused
-        gzip
+        binutils.onBuild
+        coreutils.onBuild
+        gawk.onBuild
+        gnugrep.onBuild
+        gnumake.onBuild
+        gnutar.onBuild
+        gnused.onBuild
+        gzip.onBuild
       ];
     };
   };
@@ -57,7 +58,7 @@
   inputs = { pkgs, ... }: {
     inherit (pkgs.stage0) fetchurl;
     inherit (pkgs.self) runCommand;
-    inherit (pkgs.self.bootstrapTools.onBuild) # TODO: add nested elaboration to make this more streamlined
+    inherit (lib.self.pushDownPlatforms pkgs.self.bootstrapTools)
       binutils
       coreutils
       gcc
