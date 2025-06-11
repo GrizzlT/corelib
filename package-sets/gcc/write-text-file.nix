@@ -51,7 +51,6 @@ lib:
   };
 
   inputs = { pkgs, ... }: {
-    inherit (pkgs.self) bash coreutils;
-    inherit (pkgs.stage0) mkMinimalPackage;
+    inherit (pkgs.self) bash coreutils mkMinimalPackage;
   };
 }

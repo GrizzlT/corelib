@@ -32,8 +32,6 @@ lib:
     inherit (pkgs.self)
       bash
       writeText
-      ;
-    inherit (pkgs.stage0)
       mkMinimalPackage
       ;
   };

@@ -12,14 +12,14 @@
     linkerPrefix = {
       "x86_64-linux" = "ld-linux-x86-64.so.2";
     }.${runPlatform} or (throw "Unsupported platform: ${runPlatform}");
-    linker = "${src}/glibc/lib/${linkerPrefix}";
+    linker = "${glibc}/lib/${linkerPrefix}";
 
     glibc = runCommand.onRun {
       name = "boot-glibc";
       env.buildCommand = /* bash */ ''
-        LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/mkdir $out
-        LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/cp -r ${src}/glibc/lib $out/
-        LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/cp -r ${src}/glibc/include $out/
+        LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${src}/glibc/lib/${linkerPrefix} ${src}/coreutils/bin/mkdir $out
+        LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${src}/glibc/lib/${linkerPrefix} ${src}/coreutils/bin/cp -r ${src}/glibc/lib $out/
+        LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${src}/glibc/lib/${linkerPrefix} ${src}/coreutils/bin/cp -r ${src}/glibc/include $out/
       '';
     };
     gmp = runCommand.onRun {

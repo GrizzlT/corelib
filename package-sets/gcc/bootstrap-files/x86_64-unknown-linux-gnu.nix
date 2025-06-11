@@ -33,7 +33,7 @@
   };
 
   inputs = { pkgs, ... }: {
-    inherit (pkgs.stage0) mkMinimalPackage;
+    inherit (pkgs.self) mkMinimalPackage;
   };
 
 }
