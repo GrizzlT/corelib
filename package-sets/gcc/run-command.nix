@@ -2,37 +2,40 @@ lib:
 {
   function = {
     bash,
-    writeText,
-    mkMinimalPackage,
+    buildPlatform,
+    runPlatform,
     ...
   }: let
-    inherit (lib.std.strings) makeBinPath;
-  in {
-    name,
-    version ? null,
-    shell ? "${bash.onBuild}/bin/bash",
-    env,
-    public ? {},
-  }: mkMinimalPackage.onRun {
-    inherit name version public;
-
-    drv = self: ({
-      builder = shell;
-      args = env.args or [
-        "--verbose"
-        (writeText "${self.package.name}${if (self.package.version != null && self.package.version != "") then "-${self.package.version}" else ""}-builder" env.buildCommand)
-      ];
-      PATH = makeBinPath (
-        (env.tools or [])
-      );
-    } // (removeAttrs env [ "tools" "args" "buildCommand" ]));
-  };
+    inherit (lib.std.attrsets) optionalAttrs;
+    inherit (lib.self.derivations) composeBuild layers;
+  in
+    attrs': composeBuild [
+      layers.package
+      layers.derivation
+      (layers.setPathEnv [ "tools" ])
+      (attrs: self: super: {
+        drvAttrs = super.drvAttrs or {} // {
+          system = buildPlatform;
+          builder = attrs.shell or "${bash.onBuild}/bin/bash";
+          args = attrs.args or [
+            (builtins.toFile "call-build-command.sh" ''
+              source "''${buildCommandPath}"
+            '')
+          ];
+        }
+          // (optionalAttrs (attrs ? buildCommand) {
+            inherit (attrs) buildCommand;
+            passAsFile = ["buildCommand"];
+          })
+          // attrs.env or {};
+        public = super.public or {}
+          // { inherit buildPlatform runPlatform; };
+      })
+    ] attrs';
 
   inputs = { pkgs, ... }: {
     inherit (pkgs.self)
       bash
-      writeText
-      mkMinimalPackage
       ;
   };
 }

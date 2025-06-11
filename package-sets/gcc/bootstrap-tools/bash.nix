@@ -4,6 +4,8 @@ lib:
   function = {
     bootstrapFiles,
     runCommand,
+    kaem,
+    mescc-tools-extra,
     buildPlatform,
     runPlatform,
     ...
@@ -18,25 +20,37 @@ lib:
     else runCommand.onRun {
       name = "bootstrap-bash";
       version = null;
+      buildCommand = /* sh */ ''
+        mkdir -p ''${out}/bin
+        cp ''${src}/bash/bin/bash ''${out}/bin/bash
+
+        ''${LD_BINARY} ''${src}/patchelf/bin/patchelf --set-interpreter ${linker} --set-rpath ''${src}/glibc/lib --force-rpath ''${out}/bin/bash
+        chmod 555 ''${out}/bin/bash
+      '';
+      args = [
+        "--verbose"
+        "--strict"
+        "--file"
+        (builtins.toFile "kaem-build-command.sh" ''
+          kaem --verbose --strict --file ''${buildCommandPath}
+        '')
+      ];
+      shell = "${kaem.onBuild}/bin/kaem";
+      tools = [
+        kaem.onBuild
+        mescc-tools-extra.onBuild
+      ];
       env = {
         LD_LIBRARY_PATH = "${src}/glibc/lib";
         LD_BINARY = linker;
-
-        buildCommand = /* sh */ ''
-          mkdir -p ''${out}/bin
-          cp ''${src}/bash/bin/bash ''${out}/bin/bash
-
-          ''${LD_BINARY} ''${src}/patchelf/bin/patchelf --set-interpreter ${linker} --set-rpath ''${src}/glibc/lib --force-rpath ''${out}/bin/bash
-          chmod 555 ''${out}/bin/bash
-        '';
         inherit src;
         allowedReferences = [ src ];
       };
     };
 
   inputs = { pkgs, ... }: {
-    inherit (pkgs.self) bootstrapFiles;
-    inherit (pkgs.stage0) runCommand;
+    inherit (pkgs.self) bootstrapFiles runCommand;
+    inherit (pkgs.stage0) kaem mescc-tools-extra;
   };
 
 }

@@ -1,14 +1,14 @@
 { std, ... }:
 let
-  inherit (std.attrsets) genAttrs optionalAttrs removeAttrs isDerivation;
+  inherit (std.attrsets) genAttrs optionalAttrs removeAttrs isDerivation attrByPath;
 
   inherit (std.derivations) encapsulateLayers;
 
   inherit (std.lists) head;
 
-  inherit (std.strings) sanitizeDerivationName splitString;
+  inherit (std.strings) sanitizeDerivationName splitString makeBinPath;
 
-  inherit (std.trivial) mapNullable;
+  inherit (std.trivial) isFunction mapNullable;
 
 in {
   composeBuild = layers: topAttrs:
@@ -24,13 +24,13 @@ in {
       Entrypoint for name-version coupled packages. Version is null
       by default. A name is required.
      */
-    package = { name, version ? null, ... }@topAttrs: (self: super: {
+    package = { name, version ? null, public ? {}, ... }@topAttrs: (self: super: {
       package = topAttrs.package or {} // {
         inherit name version;
       };
       public = super.public or {} // {
         inherit name version;
-      };
+      } // (if isFunction public then public self else public);
     });
 
 
@@ -141,5 +141,17 @@ in {
 
 
 
+      /**
+        Set the PATH environment variable for the build.
+        This can be tailored to each builder's favorite attribute according to
+        `${path}`.
+
+        setPathEnv :: [String] -> AttrSet -> (AttrSet -> AttrSet -> AttrSet)
+       */
+      setPathEnv = path: topAttrs: (self: super: {
+        drvAttrs = super.drvAttrs or {} // {
+          PATH = makeBinPath (attrByPath path [] topAttrs);
+        };
+      });
   };
 }

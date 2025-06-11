@@ -16,9 +16,7 @@ lib:
             system = buildPlatform;
           } // (if isFunction topAttrs.drv then topAttrs.drv self else topAttrs.drv);
           public = super.public or {}
-            // { inherit buildPlatform runPlatform; }
-            // (if isFunction (topAttrs.public or {}) then (topAttrs.public self) else topAttrs.public or {})
-            ;
+            // { inherit buildPlatform runPlatform; };
         })
       ] attrs else null;
 }
