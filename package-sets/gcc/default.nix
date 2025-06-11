@@ -61,22 +61,25 @@ stageInit [
   # Setup first cc wrapper, binutils, grep and coreutils, ...
   (
     prevStage: {
-      bash = inheritPackage (args: args.previous.bootstrapTools.__elaborate.bash.onRun);
-      binutils = inheritPackage (args: args.previous.bootstrapTools.__elaborate.binutils.onRun);
-      bzip2 = inheritPackage (args: args.previous.bootstrapTools.__elaborate.bzip2.onRun);
-      coreutils = inheritPackage (args: args.previous.bootstrapTools.__elaborate.coreutils.onRun);
-      diffutils = inheritPackage (args: args.previous.bootstrapTools.__elaborate.diffutils.onRun);
-      findutils = inheritPackage (args: args.previous.bootstrapTools.__elaborate.findutils.onRun);
-      gawk = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gawk.onRun);
-      gcc-unwrapped = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gcc.onRun);
-      gnugrep = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gnugrep.onRun);
-      gnumake = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gnumake.onRun);
-      gnupatch = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gnupatch.onRun);
-      gnused = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gnused.onRun);
-      gnutar = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gnutar.onRun);
-      gzip = inheritPackage (args: args.previous.bootstrapTools.__elaborate.gzip.onRun);
+      bash = inheritPackage (args: args.previous.bootstrapTools.onRun.bash);
+      binutils = inheritPackage (args: args.previous.bootstrapTools.onRun.binutils);
+      bzip2 = inheritPackage (args: args.previous.bootstrapTools.onRun.bzip2);
+      coreutils = inheritPackage (args: args.previous.bootstrapTools.onRun.coreutils);
+      diffutils = inheritPackage (args: args.previous.bootstrapTools.onRun.diffutils);
+      findutils = inheritPackage (args: args.previous.bootstrapTools.onRun.findutils);
+      gawk = inheritPackage (args: args.previous.bootstrapTools.onRun.gawk);
+      glibc = inheritPackage (args: args.previous.bootstrapTools.onRun.glibc);
+      gcc-unwrapped = inheritPackage (args: args.previous.bootstrapTools.onRun.gcc);
+      gnugrep = inheritPackage (args: args.previous.bootstrapTools.onRun.gnugrep);
+      gnumake = inheritPackage (args: args.previous.bootstrapTools.onRun.gnumake);
+      gnupatch = inheritPackage (args: args.previous.bootstrapTools.onRun.gnupatch);
+      gnused = inheritPackage (args: args.previous.bootstrapTools.onRun.gnused);
+      gnutar = inheritPackage (args: args.previous.bootstrapTools.onRun.gnutar);
+      gzip = inheritPackage (args: args.previous.bootstrapTools.onRun.gzip);
     }
   )
+
+  #
 ]
 
 # {
