@@ -25,9 +25,9 @@ lib:
         }
           // (optionalAttrs (attrs ? buildCommand) {
             inherit (attrs) buildCommand;
-            passAsFile = ["buildCommand"];
+            passAsFile = attrs.env.passAsFile or [] ++ ["buildCommand"];
           })
-          // attrs.env or {};
+          // (removeAttrs attrs.env or {} ["passAsFile"]);
         public = super.public or {}
           // { inherit buildPlatform runPlatform; };
       })
