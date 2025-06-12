@@ -38,9 +38,7 @@ stageInit [
       bash = import ./bootstrap-tools/bash.nix;
 
       mkMinimalPackage = import ./mk-minimal-package.nix;
-      runCommand = overrideRecipe (import ./run-command.nix) (args: {
-        writeText = args.pkgs.stage0.writeText;
-      });
+      runCommand = import ./run-command.nix;
     }
   )
 

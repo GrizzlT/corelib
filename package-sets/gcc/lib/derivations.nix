@@ -1,20 +1,27 @@
-{ std, ... }:
+{ std, self, ... }:
 let
+  inherit (std.asserts) assertMsg;
   inherit (std.attrsets) genAttrs optionalAttrs removeAttrs isDerivation attrByPath;
 
   inherit (std.derivations) encapsulateLayers;
 
-  inherit (std.lists) head;
+  inherit (std.lists) concatLists head;
 
   inherit (std.strings) sanitizeDerivationName splitString makeBinPath;
 
   inherit (std.trivial) isFunction mapNullable;
+
+  inherit (self.derivations) mergeFixpointAttr;
 
 in {
   composeBuild = layers: topAttrs:
     encapsulateLayers ((builtins.map (l: l topAttrs) layers) ++ [(self: super: {
       __topAttrs = topAttrs;
     })]);
+
+  mergeFixpointAttr = attr: self: super: (if isFunction attr then let
+    attr' = attr self;
+  in (if isFunction attr' then attr' super else attr') else attr);
 
   layers = {
 
@@ -30,9 +37,17 @@ in {
       };
       public = super.public or {} // {
         inherit name version;
-      } // (if isFunction public then public self else public);
+      };
     });
 
+
+
+    /**
+      Add public attributes at the end of the build chain.
+     */
+    addPublic = { public ? {}, ... }: (self: super: {
+      public = super.public or {} // (mergeFixpointAttr public self super);
+    });
 
 
 
@@ -137,6 +152,40 @@ in {
           outputName = head self.drvAttrs.outputs;
           drvPath = self.drvOutAttrs.drvPath;
         } // outputs;
+      });
+
+
+
+      /**
+        Set the default builder as a (bash) shell script. Collects
+        the shell script attributes in the `scriptAttrs` attribute.
+       */
+      runShellScript = {
+        buildPlatform,
+        shell,
+        ...
+      }: _: (self: super: {
+        scriptAttrs = super.scriptAttrs or {};
+        drvAttrs = super.drvAttrs or {} // {
+          system = buildPlatform;
+          builder = self.scriptAttrs.shell or shell;
+          args = self.scriptAttrs.args or (assert assertMsg ((! self.scriptAttrs ? buildScript) -> self.scriptAttrs ? args) ''
+            `buildScript` was not specified in `scriptAttrs` but no args were
+            specified as a replacement.
+
+            Please provide either `buildScript` or `args` in `scriptAttrs`.
+          ''; [
+            (builtins.toFile "call-build-script.sh" ''
+              source "''${buildScriptPath}";
+            '')
+          ]);
+        } // (optionalAttrs (self.scriptAttrs ? buildScript) {
+          inherit (self.scriptAttrs) buildScript;
+          passAsFile = concatLists [
+            (super.drvAttrs.passAsFile or [])
+            ["buildScript"]
+          ];
+        });
       });
 
 

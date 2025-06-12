@@ -1,4 +1,4 @@
-lib:
+{ std, self, ... }:
 {
   function = {
     bash,
@@ -6,31 +6,31 @@ lib:
     runPlatform,
     ...
   }: let
-    inherit (lib.std.attrsets) optionalAttrs;
-    inherit (lib.self.derivations) composeBuild layers;
+    inherit (std.attrsets) optionalAttrs;
+    inherit (self.derivations) composeBuild layers mergeFixpointAttr;
+
+    getOptionalAttrs = names: attrs:
+      builtins.foldl' (acc: name: acc // (optionalAttrs (attrs ? ${name}) {
+        ${name} = attrs.${name};
+      })) {} names;
   in
     attrs': composeBuild [
       layers.package
       layers.derivation
       (layers.setPathEnv [ "tools" ])
-      (attrs: self: super: {
-        drvAttrs = super.drvAttrs or {} // {
-          system = buildPlatform;
-          builder = attrs.shell or "${bash.onBuild}/bin/bash";
-          args = attrs.args or [
-            (builtins.toFile "call-build-command.sh" ''
-              source "''${buildCommandPath}"
-            '')
-          ];
-        }
-          // (optionalAttrs (attrs ? buildCommand) {
-            inherit (attrs) buildCommand;
-            passAsFile = attrs.env.passAsFile or [] ++ ["buildCommand"];
-          })
-          // (removeAttrs attrs.env or {} ["passAsFile"]);
+      (layers.runShellScript {
+        shell = "${bash.onBuild}/bin/bash";
+        inherit buildPlatform;
+      })
+
+      # tying it all together
+      ({ env ? {}, ... }@attrs: self: super: {
+        scriptAttrs = getOptionalAttrs ["buildScript" "shell" "args"] attrs;
+        drvAttrs = super.drvAttrs // (mergeFixpointAttr env self super);
         public = super.public or {}
           // { inherit buildPlatform runPlatform; };
       })
+
     ] attrs';
 
   inputs = { pkgs, ... }: {

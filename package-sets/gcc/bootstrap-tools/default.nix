@@ -16,7 +16,7 @@
 
     glibc = runCommand.onRun {
       name = "boot-glibc";
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${src}/glibc/lib/${linkerPrefix} ${src}/coreutils/bin/mkdir $out
         LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${src}/glibc/lib/${linkerPrefix} ${src}/coreutils/bin/cp -r ${src}/glibc/lib $out/
         LD_LIBRARY_PATH=${src}/glibc/lib:${src}/gmp/lib ${src}/glibc/lib/${linkerPrefix} ${src}/coreutils/bin/cp -r ${src}/glibc/include $out/
@@ -24,7 +24,7 @@
     };
     gmp = runCommand.onRun {
       name = "boot-gmp";
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         LD_LIBRARY_PATH=${glibc}/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/mkdir $out
         LD_LIBRARY_PATH=${glibc}/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/cp -r ${src}/gmp/lib $out/
         LD_LIBRARY_PATH=${glibc}/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/chmod -R u+w $out/lib
@@ -37,7 +37,7 @@
     };
     patchelf = runCommand.onRun {
       name = "boot-patchelf";
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         LD_LIBRARY_PATH=${glibc}/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/mkdir $out
         LD_LIBRARY_PATH=${glibc}/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/cp -r ${src}/patchelf/bin $out/
         LD_LIBRARY_PATH=${glibc}/lib:${src}/gmp/lib ${linker} ${src}/coreutils/bin/chmod u+w $out/bin/patchelf
@@ -47,7 +47,7 @@
     coreutils = runCommand.onRun {
       name = "boot-coreutils";
       tools = [ patchelf ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         LD_LIBRARY_PATH=${glibc}/lib:${gmp}/lib ${linker} ${src}/coreutils/bin/mkdir $out
         LD_LIBRARY_PATH=${glibc}/lib:${gmp}/lib ${linker} ${src}/coreutils/bin/cp -r ${src}/coreutils/bin $out/
         LD_LIBRARY_PATH=${glibc}/lib:${gmp}/lib ${linker} ${src}/coreutils/bin/chmod u+w $out/bin/coreutils
@@ -57,7 +57,7 @@
     zlib = runCommand.onRun {
       name = "boot-zlib";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/zlib/lib $out
         chmod -R u+w $out
@@ -70,7 +70,7 @@
     binutils = runCommand.onRun {
       name = "boot-binutils";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/binutils/bin $out
         cp -r ${src}/binutils/lib $out
@@ -88,7 +88,7 @@
     bzip2 = runCommand.onRun {
       name = "boot-bzip2";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/bzip2/bin $out
         cp -r ${src}/bzip2/lib $out
@@ -103,7 +103,7 @@
     diffutils = runCommand.onRun {
       name = "boot-diffutils";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/diffutils/bin $out
         chmod -R u+w $out
@@ -116,7 +116,7 @@
     findutils = runCommand.onRun {
       name = "boot-findutils";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/findutils/bin $out
         chmod -R u+w $out
@@ -129,7 +129,7 @@
     gawk = runCommand.onRun {
       name = "boot-gawk";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gawk/bin $out
         chmod -R u+w $out
@@ -139,7 +139,7 @@
     pcre2 = runCommand.onRun {
       name = "boot-pcre2";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/pcre2/lib $out
         chmod -R u+w $out
@@ -152,7 +152,7 @@
     bash' = runCommand.onRun {
       name = "boot-bash";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/bash/bin $out
         chmod -R u+w $out
@@ -163,7 +163,7 @@
     gnugrep = runCommand.onRun {
       name = "boot-gnugrep";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gnugrep/bin $out
         chmod -R u+w $out
@@ -178,7 +178,7 @@
     gnumake = runCommand.onRun {
       name = "boot-gnumake";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gnumake/bin $out
         chmod -R u+w $out
@@ -188,7 +188,7 @@
     gnupatch = runCommand.onRun {
       name = "boot-gnupatch";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gnupatch/bin $out
         chmod -R u+w $out
@@ -198,7 +198,7 @@
     gnused = runCommand.onRun {
       name = "boot-gnused";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gnused/bin $out
         chmod -R u+w $out
@@ -208,7 +208,7 @@
     gnutar = runCommand.onRun {
       name = "boot-gnutar";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gnutar/bin $out
         chmod -R u+w $out
@@ -218,7 +218,7 @@
     gzip = runCommand.onRun {
       name = "boot-gzip";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/gzip/bin $out
         chmod -R u+w $out
@@ -228,7 +228,7 @@
     isl = runCommand.onRun {
       name = "boot-isl";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/isl/lib $out
         chmod -R u+w $out
@@ -241,7 +241,7 @@
     mpfr = runCommand.onRun {
       name = "boot-mpfr";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/mpfr/lib $out
         chmod -R u+w $out
@@ -254,7 +254,7 @@
     mpc = runCommand.onRun {
       name = "boot-mpc";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         mkdir -p $out
         cp -r ${src}/mpc/lib $out
         chmod -R u+w $out
@@ -267,7 +267,7 @@
     gcc = runCommand.onRun {
       name = "boot-gcc";
       tools = [ patchelf coreutils ];
-      buildCommand = /* bash */ ''
+      buildScript = /* bash */ ''
         cp -r ${src}/gcc $out
         chmod -R u+w $out
         for i in $out/bin/*; do

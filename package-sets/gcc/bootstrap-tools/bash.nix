@@ -20,7 +20,7 @@ lib:
     else runCommand.onRun {
       name = "bootstrap-bash";
       version = null;
-      buildCommand = /* sh */ ''
+      buildScript = /* sh */ ''
         mkdir -p ''${out}/bin
         cp ''${src}/bash/bin/bash ''${out}/bin/bash
 
@@ -32,7 +32,7 @@ lib:
         "--strict"
         "--file"
         (builtins.toFile "kaem-build-command.sh" ''
-          kaem --verbose --strict --file ''${buildCommandPath}
+          kaem --verbose --strict --file ''${buildScriptPath}
         '')
       ];
       shell = "${kaem.onBuild}/bin/kaem";
